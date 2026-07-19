@@ -52,6 +52,32 @@ def test_load_chatgpt_reports_adapter_failure(tmp_path, monkeypatch):
     assert convs == [] and errors[0]["stage"] == "adapt"
 
 
+def test_load_chatgpt_reads_a_sharded_export_directory(tmp_path):
+    """A real ChatGPT Data Export ships the corpus SHARDED across
+    conversations-000.json ... conversations-NNN.json (17 shards / 1613 conversations
+    in the observed export), so a DIRECTORY must load every shard, not one file."""
+    _write(tmp_path / "conversations-000.json", [{"conversation_id": "a", "mapping": {}}])
+    _write(tmp_path / "conversations-001.json", [{"conversation_id": "b", "mapping": {}}])
+    _write(tmp_path / "not-a-conversation.json", [{"conversation_id": "zz", "mapping": {}}])
+    convs, errors, _ = loaders.load_chatgpt(str(tmp_path))
+    assert sorted(c.id for c in convs) == ["a", "b"] and not errors
+
+
+def test_load_chatgpt_directory_also_takes_a_plain_conversations_json(tmp_path):
+    """Older/renamed exports ship a single conversations.json; a shard glob alone
+    would silently load NOTHING from such a directory."""
+    _write(tmp_path / "conversations.json", [{"conversation_id": "solo", "mapping": {}}])
+    convs, errors, _ = loaders.load_chatgpt(str(tmp_path))
+    assert [c.id for c in convs] == ["solo"] and not errors
+
+
+def test_load_chatgpt_dedupes_a_conversation_present_in_two_shards(tmp_path):
+    _write(tmp_path / "conversations-000.json", [{"conversation_id": "dup", "mapping": {}}])
+    _write(tmp_path / "conversations-001.json", [{"conversation_id": "dup", "mapping": {}}])
+    convs, _, _ = loaders.load_chatgpt(str(tmp_path))
+    assert [c.id for c in convs] == ["dup"]
+
+
 def test_load_gemini_reports_malformed_transcript(tmp_path):
     (tmp_path / "t.json").write_text("{bad", encoding="utf-8")
     convs, errors, extra = loaders.load_gemini(str(tmp_path / "t.json"))

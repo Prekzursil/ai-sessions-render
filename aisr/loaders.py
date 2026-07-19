@@ -78,11 +78,34 @@ def _cid(c):
     return c.get("conversation_id") or c.get("id") or ""
 
 
+def _chatgpt_files(p):
+    """Resolve one CLI argument to the export files it stands for.
+
+    A real ChatGPT Data Export ships the corpus SHARDED as
+    conversations-000.json ... conversations-NNN.json (17 shards / 1613 conversations
+    in the observed export), so a DIRECTORY must contribute every shard. Older or
+    renamed exports ship a single conversations.json, which is picked up too. A path
+    to one file is still honoured as-is (a harvested array, or one renamed shard).
+    """
+    if os.path.isdir(p):
+        files = sorted(glob.glob(os.path.join(p, "conversations-*.json")))
+        single = os.path.join(p, "conversations.json")
+        if os.path.isfile(single):
+            files.append(single)
+        return files
+    return [p] if os.path.isfile(p) else []
+
+
 def load_chatgpt(main_path, projects_path=None):
-    """The main export plus an optional second file of project-tagged conversations.
-    A conversation appearing in both is rendered ONCE (deduped by id)."""
+    """The main export (a file OR an export directory) plus an optional second file
+    of project-tagged conversations. A conversation appearing in more than one shard
+    or file is rendered ONCE (deduped by id)."""
     errors, by_id, proj_of = [], {}, {}
-    for path in [p for p in (main_path, projects_path) if p and os.path.isfile(p)]:
+    paths = []
+    for p in (main_path, projects_path):
+        if p:
+            paths += _chatgpt_files(p)
+    for path in paths:
         try:
             raw = _as_list(_load_json(path))
         except Exception as e:
