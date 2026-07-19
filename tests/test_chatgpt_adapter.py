@@ -106,6 +106,63 @@ def test_multimodal_image_asset_becomes_media_block():
     assert "media" in kinds and "text" in kinds
 
 
+def _audio_conv(part):
+    return _conv([
+        _node("root", None, ["a"]),
+        _node("a", "root", [], role="user", ctype="multimodal_text", parts=[part]),
+    ], current="a")
+
+
+def test_audio_transcription_becomes_readable_text():
+    """Voice-mode conversations carry the SPOKEN WORDS in an audio_transcription
+    part (694 in the real export). That is prose a reader must see — rendering it
+    as a raw `unknown` payload loses real conversation content."""
+    c = chatgpt.parse_conversation(_audio_conv(
+        {"content_type": "audio_transcription", "text": "hello out loud",
+         "direction": "in", "decoding_id": None}))
+    blocks = [b for t in c.turns for b in t.blocks]
+    assert [b.type for b in blocks] == ["text"]
+    assert blocks[0].text == "hello out loud"
+
+
+def test_empty_audio_transcription_is_skipped_not_emitted():
+    c = chatgpt.parse_conversation(_audio_conv(
+        {"content_type": "audio_transcription", "text": "   ", "direction": "in"}))
+    assert [b.type for t in c.turns for b in t.blocks] == []
+
+
+def test_audio_asset_pointer_becomes_media_block():
+    c = chatgpt.parse_conversation(_audio_conv(
+        {"content_type": "audio_asset_pointer", "asset_pointer": "file-service://file-AUD",
+         "format": "wav", "size_bytes": 123, "metadata": {}}))
+    blocks = [b for t in c.turns for b in t.blocks]
+    assert [b.type for b in blocks] == ["media"]
+    assert blocks[0].data["pointer"] == "file-service://file-AUD"
+    assert blocks[0].data["path"] == "file-AUD"
+
+
+def test_realtime_audio_video_pointer_uses_its_nested_audio_asset():
+    """The real-time voice part wraps the usable pointer in a NESTED
+    audio_asset_pointer dict (347 in the real export)."""
+    c = chatgpt.parse_conversation(_audio_conv(
+        {"content_type": "real_time_user_audio_video_asset_pointer",
+         "audio_asset_pointer": {"content_type": "audio_asset_pointer",
+                                 "asset_pointer": "file-service://file-RT"},
+         "audio_start_timestamp": 1.0, "frames_asset_pointers": [],
+         "video_container_asset_pointer": None}))
+    blocks = [b for t in c.turns for b in t.blocks]
+    assert [b.type for b in blocks] == ["media"]
+    assert blocks[0].data["pointer"] == "file-service://file-RT"
+
+
+def test_realtime_pointer_without_nested_asset_is_preserved_as_unknown():
+    """No usable pointer -> preserve the raw payload rather than drop it."""
+    c = chatgpt.parse_conversation(_audio_conv(
+        {"content_type": "real_time_user_audio_video_asset_pointer",
+         "audio_asset_pointer": None}))
+    assert [b.type for t in c.turns for b in t.blocks] == ["unknown"]
+
+
 def test_consecutive_assistant_nodes_coalesce_into_one_turn():
     c = chatgpt.parse_conversation(_conv([
         _node("root", None, ["a"]),

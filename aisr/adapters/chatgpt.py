@@ -11,12 +11,17 @@ The rendered thread is current_node -> parent -> ... -> root, REVERSED. Every ot
 child of a branching node is an abandoned regeneration and must not be rendered, or
 the transcript silently mixes discarded replies into the conversation.
 
-Content types handled: text, code, multimodal_text (incl. image_asset_pointer),
-thoughts / reasoning_recap (collapsed thinking), execution_output. Anything else is
-passed through as an `unknown` block with its raw payload rather than dropped.
+Content types handled: text, code, multimodal_text, thoughts / reasoning_recap
+(collapsed thinking), execution_output. Multimodal PARTS handled: image_asset_pointer,
+plus the three voice-mode types — audio_transcription (the spoken words, rendered as
+readable text), audio_asset_pointer, and real_time_user_audio_video_asset_pointer
+(whose usable pointer is nested). Anything else is passed through as an `unknown`
+block carrying its raw payload rather than dropped.
 
-NOT YET VALIDATED against a real export — the user's ChatGPT Data Export never
-arrived. Synthetic tests only; re-verify when a real conversations.json lands.
+VALIDATED against a real Data Export (2026-07-19): 1613 conversations / 56373 turns
+parsed with 0 errors and 0 empty conversations. That export carried only text,
+thoughts, multimodal_text and reasoning_recap at the message level — no canvas/canmore,
+tool calls, or execution_output — so those paths remain synthetic-tested only.
 """
 from aisr import ir
 
@@ -159,14 +164,39 @@ def _blocks_from_message(msg):
                 if part.strip():
                     blocks.append(ir.Block("text", text=part))
             elif isinstance(part, dict):
-                if _s(part.get("content_type")) == "image_asset_pointer":
-                    ptr = _s(part.get("asset_pointer"))
-                    blocks.append(ir.Block("media", text=ptr,
-                                           data={"path": ptr.rsplit("/", 1)[-1], "pointer": ptr}))
-                else:
-                    blocks.append(ir.Block("unknown", data={"orig_type": _s(part.get("content_type")),
-                                                            "x_raw": part}))
+                b = _part_block(part)
+                if b is not None:
+                    blocks.append(b)
         return blocks
 
     # never silently drop an unrecognised content type
     return [ir.Block("unknown", data={"orig_type": ctype, "x_raw": content})]
+
+
+def _asset_block(ptr):
+    """A file-service asset pointer -> media block."""
+    return ir.Block("media", text=ptr,
+                    data={"path": ptr.rsplit("/", 1)[-1], "pointer": ptr})
+
+
+def _part_block(part):
+    """One dict part of a multimodal message -> a block, or None to skip.
+
+    Voice-mode conversations carry three audio part types. `audio_transcription`
+    holds the SPOKEN WORDS — it is prose the reader must see, so it renders as text
+    rather than a raw payload dump (694 of them sit in the real export).
+    """
+    pt = _s(part.get("content_type"))
+    if pt in ("image_asset_pointer", "audio_asset_pointer"):
+        return _asset_block(_s(part.get("asset_pointer")))
+    if pt == "audio_transcription":
+        text = _s(part.get("text"))
+        return ir.Block("text", text=text) if text.strip() else None
+    if pt == "real_time_user_audio_video_asset_pointer":
+        # the usable pointer is NESTED one level down
+        inner = part.get("audio_asset_pointer")
+        ptr = _s(inner.get("asset_pointer")) if isinstance(inner, dict) else ""
+        if ptr:
+            return _asset_block(ptr)
+    # never silently drop an unrecognised part
+    return ir.Block("unknown", data={"orig_type": pt, "x_raw": part})

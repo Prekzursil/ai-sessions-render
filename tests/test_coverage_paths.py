@@ -239,12 +239,15 @@ def test_chatgpt_reasoning_recap_content_string_becomes_thinking():
     assert c.turns[0].blocks[0].type == "thinking" and "recap body" in c.turns[0].blocks[0].text
 
 
-def test_chatgpt_multimodal_non_image_part_becomes_unknown():
+def test_chatgpt_multimodal_unrecognised_part_becomes_unknown():
+    """A part type the adapter has never seen must be preserved as `unknown` with its
+    raw payload — not dropped. (audio_* and image_asset_pointer are handled types now,
+    so this fixture uses a genuinely unrecognised one.)"""
     c = chatgpt.parse_conversation({"title": "t", "id": "x", "current_node": "a", "mapping": {
         "a": {"id": "a", "parent": None, "children": [],
               "message": {"id": "a", "author": {"role": "user"}, "create_time": 1.0,
                           "content": {"content_type": "multimodal_text",
-                                      "parts": ["look", {"content_type": "audio_asset_pointer", "x": 1}]},
+                                      "parts": ["look", {"content_type": "some_future_part", "x": 1}]},
                           "metadata": {}}}}})
     kinds = [b.type for t in c.turns for b in t.blocks]
     assert "text" in kinds and "unknown" in kinds
