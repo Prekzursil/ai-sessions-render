@@ -76,15 +76,32 @@ def _design_blocks(content):
     for b in (content.get("contentBlocks") or []):
         if not isinstance(b, dict):
             continue
-        if _s(b.get("type")) == "text" and _s(b.get("text")).strip():
+        btype = _s(b.get("type"))
+        if btype == "text" and _s(b.get("text")).strip():
             blocks.append(ir.Block("text", text=_s(b.get("text"))))
+        elif btype == "tool_call" and isinstance(b.get("toolCall"), dict):
+            blocks.extend(_tool_call_blocks(b["toolCall"]))
         else:                                   # never silently drop an unknown block
-            blocks.append(ir.Block("unknown",
-                                   data={"orig_type": _s(b.get("type")), "x_raw": b}))
+            blocks.append(ir.Block("unknown", data={"orig_type": btype, "x_raw": b}))
     if blocks:
         return blocks
     flat = _s(content.get("content"))
     return [ir.Block("text", text=flat)] if flat.strip() else []
+
+
+def _tool_call_blocks(tc):
+    """A design-chat tool_call {id,name,input,output} -> tool_use (+ tool_result when it
+    carries an output), so it renders like the regular chat_messages tool path rather
+    than as a raw payload. 140 such blocks sit in the live corpus (2 design chats)."""
+    out = [ir.Block("tool_use", text="",
+                    data={"name": _s(tc.get("name")), "input": tc.get("input"),
+                          "id": _s(tc.get("id"))})]
+    output = tc.get("output")
+    if _s(output).strip():
+        out.append(ir.Block("tool_result", text="",
+                            data={"name": _s(tc.get("name")), "content": output,
+                                  "tool_use_id": _s(tc.get("id"))}))
+    return out
 
 
 def parse_conversation(conv):

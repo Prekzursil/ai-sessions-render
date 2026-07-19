@@ -61,6 +61,45 @@ def test_design_chat_non_text_block_is_not_silently_dropped():
     assert "unknown" in [b.type for t in c.turns for b in t.blocks]
 
 
+def test_design_chat_tool_call_renders_as_tool_use_and_result():
+    """Real design chats carry `tool_call` contentBlocks shaped
+    {toolCall:{id,name,input,output}} (140 in the live corpus). They must render as
+    tool_use (+tool_result) blocks like the regular chat_messages path — NOT fall
+    through to a raw `unknown` payload."""
+    c = claude.parse_design_chat(_design_chat([
+        {"uuid": "m", "role": "assistant", "content": {"contentBlocks": [
+            {"type": "tool_call", "toolCall": {
+                "id": "tc1", "type": "function", "name": "web_search",
+                "input": {"q": "x"}, "output": "3 results"}},
+        ]}},
+    ]))
+    blocks = [b for t in c.turns for b in t.blocks]
+    assert [b.type for b in blocks] == ["tool_use", "tool_result"]
+    assert blocks[0].data["name"] == "web_search" and blocks[0].data["input"] == {"q": "x"}
+    assert blocks[0].data["id"] == "tc1"
+    assert blocks[1].data["content"] == "3 results" and blocks[1].data["tool_use_id"] == "tc1"
+
+
+def test_design_chat_tool_call_without_output_has_no_result_block():
+    """1 of the 140 real tool_calls carries no `output` — emit tool_use only, never a
+    fabricated empty result."""
+    c = claude.parse_design_chat(_design_chat([
+        {"uuid": "m", "role": "assistant", "content": {"contentBlocks": [
+            {"type": "tool_call", "toolCall": {"id": "t", "name": "run", "input": {}}},
+        ]}},
+    ]))
+    assert [b.type for t in c.turns for b in t.blocks] == ["tool_use"]
+
+
+def test_design_chat_malformed_tool_call_falls_back_to_unknown():
+    """A tool_call block with no toolCall dict must not crash — preserve it as unknown."""
+    c = claude.parse_design_chat(_design_chat([
+        {"uuid": "m", "role": "assistant",
+         "content": {"contentBlocks": [{"type": "tool_call", "toolCall": "oops"}]}},
+    ]))
+    assert [b.type for t in c.turns for b in t.blocks] == ["unknown"]
+
+
 def test_design_chat_with_no_messages_is_empty_not_a_crash():
     assert claude.parse_design_chat(_design_chat([])).turns == []
 
