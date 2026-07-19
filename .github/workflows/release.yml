@@ -1,0 +1,52 @@
+name: Release to PyPI
+
+# Publishes on a published GitHub Release, using PyPI Trusted Publishing (OIDC).
+# No API token is ever stored in this repository — GitHub mints a short-lived
+# identity token and PyPI verifies it. One-time setup on PyPI:
+#   PyPI -> your project -> Publishing -> Add a new (pending) publisher
+#     Owner: Prekzursil   Repository: ai-sessions-render
+#     Workflow: release.yml   Environment: pypi
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install build
+      - run: python -m build
+
+      # never ship an artifact that was not smoke-tested
+      - name: verify the wheel installs and the CLI runs
+        run: |
+          python -m venv /tmp/venv
+          /tmp/venv/bin/pip install dist/*.whl
+          /tmp/venv/bin/aisr demo /tmp/demo.html
+          test -s /tmp/demo.html
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+  pypi:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      id-token: write        # required for Trusted Publishing
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+      - uses: pypa/gh-action-pypi-publish@release/v1
