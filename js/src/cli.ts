@@ -7,7 +7,7 @@
  * identically. Nothing here is on the byte-for-byte-parity-tested renderer path; the
  * heavy lifting is delegated to the same ported modules the tests cover.
  */
-import { globSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
+import { mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { basename, dirname, join } from "node:path";
 
 import * as chatgpt from "./adapters/chatgpt.js";
@@ -174,11 +174,16 @@ function loadClaude(src: string, outDir: string): [Conversation[], LoadError[]] 
   if (statSync(src).isFile()) {
     files = [src];
   } else {
-    // sort each glob independently, matching Python's sorted(glob(...)) so the
-    // conversation numbering (001-, 002-, ...) is identical across the two rails
-    const g = (pat: string): string[] => globSync(join(src, ...pat.split("/")).replace(/\\/g, "/")).sort();
-    files = [...g("**/conversations.json"), ...g("**/design_chats/*.json")];
-    if (!files.length) files = g("**/*.json");
+    // readdirSync(recursive) rather than fs.globSync: the latter only stabilised in
+    // Node 22, so it crashes on the Node 20 we support. Sorted the same way Python's
+    // sorted(glob(...)) is, so the conversation numbering matches across the two rails.
+    const all = readdirSync(src, { recursive: true })
+      .filter((p): p is string => typeof p === "string" && p.endsWith(".json"))
+      .map((p) => join(src, p))
+      .sort();
+    const conv = all.filter((f) => basename(f) === "conversations.json");
+    const design = all.filter((f) => basename(dirname(f)) === "design_chats");
+    files = conv.length || design.length ? [...conv, ...design] : all;
     const outAbs = join(outDir);
     files = files.filter((f) => !f.startsWith(outAbs));
   }
