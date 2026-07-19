@@ -412,6 +412,37 @@ describe("claude adapter edges", () => {
     expect(kinds).toContain("unknown");
   });
 
+  it("abandoned-branch tree: descends to the live thread and marks the branch", () => {
+    // a user turn with two assistant children (siblings); the live one continues a
+    // deeper subtree, so argmaxKid must descend to it, not the newest immediate child,
+    // and the chosen node carries a 2-sibling branch marker
+    const m = (u: string, parent: string | null, sender: string, text: string, t: string) => ({
+      uuid: u, parent_message_uuid: parent, sender, created_at: t,
+      content: [{ type: "text", text, citations: [] }], attachments: [], files: [],
+    });
+    const c = claude.parseConversation({ uuid: "c", name: "n", account: { uuid: "a" }, chat_messages: [
+      m("r", null, "human", "q", "t1"),
+      m("old", "r", "assistant", "ABANDONED", "t2"),
+      m("new", "r", "assistant", "LIVE", "t3"),
+      m("cont", "new", "human", "continues here", "t4"),
+    ] });
+    const texts = c.turns.flatMap((t) => t.blocks.map((b) => b.text));
+    expect(texts).toContain("LIVE");
+    expect(texts).toContain("continues here");
+    expect(texts).not.toContain("ABANDONED");
+    expect(c.turns.some((t) => t.branch !== null && t.branch.total === 2)).toBe(true);
+  });
+
+  it("design chat with a text contentBlock renders its text", () => {
+    const c = claude.parseDesignChat({ uuid: "d", title: "T", messages: [
+      { uuid: "m", role: "assistant",
+        content: { content: "FLAT", contentBlocks: [{ type: "text", text: "BLOCK TEXT" }] } },
+    ] });
+    const texts = c.turns.flatMap((t) => t.blocks.map((b) => b.text));
+    expect(texts).toContain("BLOCK TEXT");
+    expect(texts).not.toContain("FLAT"); // contentBlocks win over the flat string
+  });
+
   it("renders orphaned mutually-parented messages (the orphan sweep)", () => {
     // a.parent=b and b.parent=a -> neither is a root -> both are swept as orphans
     const m = (u: string, parent: string) => ({
