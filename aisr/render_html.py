@@ -21,8 +21,8 @@ from aisr import sanitize
 
 try:
     _MD = MarkdownIt("gfm-like", {"html": False, "linkify": False, "typographer": False})
-except (KeyError, ValueError):        # older markdown-it-py without the preset
-    _MD = MarkdownIt("commonmark", {"html": False})
+except (KeyError, ValueError):        # pragma: no cover - version fallback: the pinned
+    _MD = MarkdownIt("commonmark", {"html": False})   # markdown-it-py has the preset
 
 _THEME_DIR = os.path.join(os.path.dirname(__file__), "themes")
 _A_ANY = re.compile(r"<a\s+([^>]*)>", re.IGNORECASE)

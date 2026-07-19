@@ -16,10 +16,10 @@ const BLOB_KEYS = ["input", "content"] as const;
 export function* auditTexts(conv: Conversation): Generator<string> {
   yield conv.title || "";
   yield conv.account || "";
-  for (const t of conv.turns ?? []) {
-    for (const b of t.blocks ?? []) {
+  for (const t of conv.turns) {
+    for (const b of t.blocks) {
       yield b.text || "";
-      const d = b.data ?? {};
+      const d = b.data;
       for (const k of STR_KEYS) {
         if (typeof d[k] === "string") yield d[k] as string;
       }
@@ -36,7 +36,7 @@ export function* auditTexts(conv: Conversation): Generator<string> {
           }
         }
       }
-      for (const c of b.citations ?? []) {
+      for (const c of b.citations) {
         if (c !== null && typeof c === "object") {
           for (const k of ["title", "url"] as const) {
             if (typeof c[k] === "string") yield c[k] as string;

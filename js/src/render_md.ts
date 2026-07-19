@@ -83,13 +83,13 @@ export function renderConversationMd(conv: Conversation): string {
 }
 
 function blockMd(b: Block): string {
-  const d = b.data ?? {};
+  const d = b.data;
   const str = (k: string): string => (typeof d[k] === "string" ? (d[k] as string) : "");
 
   if (b.type === "text") {
     let body = clean(b.text);
     const parts: string[] = [];
-    for (const c of b.citations ?? []) {
+    for (const c of b.citations) {
       if (c === null || typeof c !== "object") continue;
       const url = typeof c.url === "string" ? c.url : "";
       const title = mdInline(c.title || url || "source");

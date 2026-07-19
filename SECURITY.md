@@ -13,7 +13,7 @@ in this repository. All examples in this document are synthetic.
 ## 1. Security goals
 
 1. **No egress.** The build and the rendered artifacts never touch the network
-   (`build_claude.py:8` — "NOTHING leaves the machine"). Verified two ways: no
+   (`aisr/build.py` — "NOTHING leaves the machine"). Verified two ways: no
    network-capable module (`urllib`, `http`, `socket`, `requests`, …) is imported anywhere
    in the package — the `aisr` package imports only stdlib (`html`, `json`, `os`, `re`,
    `unicodedata`, `dataclasses`, `typing`, `collections`) plus `markdown-it-py`
@@ -33,8 +33,8 @@ in this repository. All examples in this document are synthetic.
 | Zone | Contents | Trust |
 |---|---|---|
 | Export files | `conversations.json` / `transcript.json` bodies, titles, tool inputs/outputs, attachment `extracted_content`, citation titles/URLs, unknown-block payloads | **Untrusted.** Anyone who ever influenced a message (a summarised web page, a tool result, a pasted document) writes into this zone. |
-| aisr code + Python stdlib + `markdown-it-py` | The pipeline itself | Trusted (TCB). Parsing is `json.load` only — no `pickle`, no `eval` (`build_claude.py:46`). |
-| Outputs | `html/`, `md/`, `index.html`, `_hidden-char-audit.json`, `_fidelity-report.json` (`build_claude.py:6-8,78-82`) | Derived; HTML is self-contained, CSP-pinned. |
+| aisr code + Python stdlib + `markdown-it-py` | The pipeline itself | Trusted (TCB). Parsing is `json.load` only — no `pickle`, no `eval` (`aisr/build.py`). |
+| Outputs | `html/`, `md/`, `index.html`, `_hidden-char-audit.json`, `_fidelity-report.json` (`aisr/build.py`) | Derived; HTML is self-contained, CSP-pinned. |
 
 **Parties at risk:** (a) the human opening the rendered HTML in a browser; (b) any
 model/agent that is later fed the Markdown copy; (c) the build host's filesystem.
@@ -54,7 +54,7 @@ will read. The neutraliser (`aisr/sanitize.py`) flags, per codepoint and **posit
 | Control chars (Cc) | all except TAB/LF/CR | Non-printing controls | `aisr/sanitize.py:23,57-59` |
 | Format chars (Cf) | e.g. zero-width space, soft hyphen, **bidi controls** (Trojan-Source-style reordering) | Invisible or text-reordering | `aisr/sanitize.py:62` |
 | Private use (Co), unassigned (Cn) | — | Undefined rendering, covert channel | `aisr/sanitize.py:62` |
-| Lone surrogates (Cs) | — | Survive `json.loads` but abort a UTF-8 write; previously killed a whole build mid-corpus | `aisr/sanitize.py:60-62` (plus `errors="replace"` write defence, `build_claude.py:92-95`) |
+| Lone surrogates (Cs) | — | Survive `json.loads` but abort a UTF-8 write; previously killed a whole build mid-corpus | `aisr/sanitize.py:60-62` (plus `errors="replace"` write defence, `aisr/build.py`) |
 
 **Emoji are not broken:** a ZWJ *between two pictographs* and a VS16 *immediately after a
 pictograph* are presentation, not payload, and are preserved (`aisr/sanitize.py:31-39,
@@ -88,7 +88,7 @@ surface — title, account, block text, tool `input`/`content` (JSON-serialised 
 structured), `extracted_content`, file names, citation titles and URLs
 (`aisr/audit.py:15-40`; scanning only body text under-reported by roughly 5×,
 `aisr/audit.py:3-6`). The build writes the result to `_hidden-char-audit.json`
-(`build_claude.py:59-63,79`).
+(`aisr/build.py`).
 
 ## 4. Threat: markup/script injection and egress from the HTML view
 
@@ -116,7 +116,7 @@ structured), `extracted_content`, file names, citation titles and URLs
   `default-src 'none'; style-src 'unsafe-inline'; img-src 'self' data:; font-src 'self'
   data:; base-uri 'none'; form-action 'none'` (`aisr/render_html.py:32-33,228-235`); the
   index page carries `default-src 'none'; style-src 'unsafe-inline'`
-  (`build_claude.py:110-111`). No `script-src` is granted and no `<script>` is ever
+  (`aisr/build.py`). No `script-src` is granted and no `<script>` is ever
   emitted (`aisr/render_html.py:228-235`), so scripts are dead even if an escaping bug
   slipped markup through; `img-src 'self' data:` means even an un-defanged remote image
   could not load; `base-uri 'none'` / `form-action 'none'` block base-hijack and form
@@ -146,14 +146,14 @@ conversation *structure* there:
 
 - **Output file names** are sanitised (illegal/`..`-forming characters `<>:"/\|?*` and
   C0 controls replaced, hidden chars stripped, length-capped, index-prefixed)
-  (`build_claude.py:21-27`), so a hostile conversation title cannot traverse or collide
+  (`aisr/build.py`), so a hostile conversation title cannot traverse or collide
   paths.
 - **One bad conversation cannot truncate the corpus:** each conversation renders inside
   its own try/except; failures are reported in `_fidelity-report.json`, not fatal
-  (`build_claude.py:10-11,55-76`).
-- **The build never ingests its own output** (self-recursion guard, `build_claude.py:34-36`).
+  (`aisr/build.py`).
+- **The build never ingests its own output** (self-recursion guard, `aisr/build.py`).
 - **Unpaired surrogates cannot abort the write** (`errors="replace"`,
-  `build_claude.py:92-95`) — defence in depth behind the Cs flagging in §3.
+  `aisr/build.py`) — defence in depth behind the Cs flagging in §3.
 
 ## 7. What is covered vs NOT covered
 
@@ -167,7 +167,7 @@ conversation *structure* there:
 - Text-exact fidelity: every `\w+` word token (case-folded, multiset-counted) from `text`
   and `thinking` bodies must reappear in the rendered HTML's visible text or harvested
   `href|src|alt|title`/`language-*` attributes (`aisr/verify.py:20-27,42-74`). The build
-  records failures per conversation in `_fidelity-report.json` (`build_claude.py:65-70,80-82`).
+  records failures per conversation in `_fidelity-report.json` (`aisr/build.py`).
 
 ### NOT covered (explicit non-goals and blind spots)
 
@@ -186,7 +186,7 @@ conversation *structure* there:
      (`aisr/verify.py:46-51`) — they are rendered escaped (§4) and audited for hidden
      chars (§3), but a silent *drop* there would not fail `verify()`.
    - The gate **reports**; it does not delete or quarantine failing output — failing
-     conversations are still written and counted (`build_claude.py:65-72,80-88`).
+     conversations are still written and counted (`aisr/build.py`).
 3. **Homoglyphs / confusables are out of scope by design.** A visible Cyrillic `а` in
    place of Latin `a` is faithful *content*; rewriting it would violate fidelity. The
    sanitizer targets invisibility, not visual similarity.
@@ -227,7 +227,7 @@ conversation *structure* there:
   They are still *untrusted prose* — strip badges of trust, not of caution: visible
   injection text ("ignore previous instructions…") survives verbatim, by design.
 - `_hidden-char-audit.json` tells you exactly which conversations carried hidden
-  codepoints, and which ones (`build_claude.py:59-63,79`).
+  codepoints, and which ones (`aisr/build.py`).
 
 ## 9. Responsible disclosure
 
@@ -241,13 +241,16 @@ find any of the following, please report it privately:
 - a way for rendered output to trigger a network request despite §4;
 - Markdown structure forgery that survives §5.
 
-**How to report:** email `realprekzursil@gmail.com` with subject `[aisr security]`, or use
-the repository host's private security-advisory mechanism once the repository is
-published. Please include a **synthetic** minimal reproduction (e.g. a crafted export
-JSON with placeholder text) — **never include real conversation content**, which is
-sensitive by definition here. Best-effort response; there is no bug bounty. Please allow
-a reasonable window before public disclosure.
+**How to report — preferred:** open a private report through GitHub's **Security → Report
+a vulnerability** ("Private vulnerability reporting" is enabled on this repository). This
+keeps the report confidential and threaded until a fix ships. If you cannot use GitHub,
+email the address on the maintainer's GitHub profile with subject `[aisr security]`.
+
+Please include a **synthetic** minimal reproduction (e.g. a crafted export JSON with
+placeholder text) — **never include real conversation content**, which is sensitive by
+definition here. Best-effort response; there is no bug bounty. Please allow a reasonable
+window before public disclosure.
 
 ---
 *This document uses only synthetic examples. The tool runs entirely locally; nothing
-leaves the machine (`build_claude.py:8`, §1).*
+leaves the machine (`aisr/build.py`, §1).*

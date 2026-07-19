@@ -46,9 +46,11 @@ function isWordCp(cp: number): boolean {
   return false;
 }
 
-/** Python's `re.findall(r"\w+", s.lower())` over Unicode word characters. */
-function tok(s: unknown): string[] {
-  const lowered = (typeof s === "string" ? s : "").toLowerCase();
+/** Python's `re.findall(r"\w+", s.lower())` over Unicode word characters.
+ *  Always called with a string (a block body or decoded HTML), matching the
+ *  Python rail which likewise assumes a string. */
+function tok(s: string): string[] {
+  const lowered = s.toLowerCase();
   const out: string[] = [];
   let cur = "";
   for (const ch of lowered) {
@@ -70,8 +72,8 @@ function tok(s: unknown): string[] {
  */
 export function proseTokens(conv: Conversation): string[] {
   const toks: string[] = [];
-  for (const t of conv.turns ?? []) {
-    for (const b of t.blocks ?? []) {
+  for (const t of conv.turns) {
+    for (const b of t.blocks) {
       if (b.type === "text" || b.type === "thinking") {
         toks.push(...tok(b.text.replace(OL_MARKER, " ")));
       }

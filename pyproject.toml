@@ -33,7 +33,7 @@ classifiers = [
 dependencies = ["markdown-it-py>=2.2"]
 
 [project.optional-dependencies]
-dev = ["pytest>=7"]
+dev = ["pytest>=7", "pytest-cov>=4"]
 
 [project.urls]
 Homepage = "https://github.com/Prekzursil/ai-sessions-render"
@@ -59,4 +59,10 @@ include = [
 [tool.pytest.ini_options]
 pythonpath = ["."]
 testpaths = ["tests"]
-addopts = "-q"
+# Lean 100% coverage gate — every statement in aisr/ must be exercised; the few
+# genuinely-unreachable defensive guards carry a justified `# pragma: no cover`.
+addopts = "-q --cov=aisr --cov-report=term-missing --cov-fail-under=100"
+
+[tool.coverage.run]
+branch = true
+source = ["aisr"]

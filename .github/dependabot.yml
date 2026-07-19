@@ -1,0 +1,33 @@
+version: 2
+updates:
+  # Python rail
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    labels: ["dependencies", "python"]
+    groups:
+      python-deps:
+        patterns: ["*"]
+
+  # JS/TypeScript rail
+  - package-ecosystem: "npm"
+    directory: "/js"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    labels: ["dependencies", "javascript"]
+    groups:
+      js-deps:
+        # keep the security-relevant runtime deps ungrouped so they are reviewable
+        # on their own; markdown-it is version-pinned for cross-rail byte parity
+        dev-dependencies:
+          dependency-type: "development"
+
+  # the workflows themselves
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    labels: ["dependencies", "github-actions"]

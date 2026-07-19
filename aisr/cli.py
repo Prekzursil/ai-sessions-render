@@ -60,8 +60,8 @@ def main(argv=None):
         print("DEMO_WRITTEN", args.out_html)
         return 0
 
-    if args.cmd is None:
-        parser.print_help()
+    if args.cmd is None:              # pragma: no cover - empty argv is handled above and
+        parser.print_help()           # argparse rejects any non-subcommand token before here
         return 2
 
     if not os.path.exists(args.src):
@@ -79,7 +79,7 @@ def main(argv=None):
         convs, errors, extra = loaders.load_gemini(args.src, args.harvest)
         report = build.render_corpus(convs, args.out_dir, provider="gemini", load_errors=errors,
                                      extra=extra)
-    else:
+    else:                             # pragma: no cover - argparse constrains cmd to the four above
         parser.print_help()
         return 2
 
@@ -87,5 +87,5 @@ def main(argv=None):
     return 0
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":            # pragma: no cover
     raise SystemExit(main())

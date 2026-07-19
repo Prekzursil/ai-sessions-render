@@ -13,9 +13,9 @@ re-feeding to tools. Two independent cross-checks run on every conversation: a
 self-contained with inlined CSS and a `default-src 'none'` Content-Security-Policy
 (`aisr/render_html.py:32-33`), remote markdown images are defanged into labelled links
 instead of `<img>` loads (`aisr/render_html.py:88-102`), and the build scripts state the
-guarantee explicitly (`build_claude.py:8`, `build_gemini.py:12`). Session content is
-sensitive; every example in this document and in the code (`build_claude.py --demo`,
-`build_claude.py:120-148`) is **synthetic**.
+guarantee explicitly (`aisr/build.py`, `aisr/loaders.py`). Session content is
+sensitive; every example in this document and in the code (`aisr demo`,
+`aisr/build.py`) is **synthetic**.
 
 Runtime dependency: `markdown-it-py` (MIT), imported at `aisr/render_html.py:18`.
 (Note: `pyproject.toml` currently carries only project metadata and pytest config —
@@ -54,10 +54,11 @@ conversations.json  -->   adapters/chatgpt.py   --+
           audit.py    hidden-char forensic scan -> _hidden-char-audit.json
 ```
 
-Entry points: `build_claude.py` (export file or directory -> site) and `build_gemini.py`
-(transcript + optional harvest -> site). There is **no `build_chatgpt.py` yet** — the
-ChatGPT adapter exists but has no build driver and has not been validated against a real
-export (`aisr/adapters/chatgpt.py:18-19`).
+Entry point: the `aisr` console command (`aisr/cli.py`), with subcommands `claude`,
+`chatgpt`, `gemini` and `demo`. It delegates to `aisr/loaders.py` (per-provider loading
+and grouping) and `aisr/build.py` (the shared render/verify/write pipeline). The ChatGPT
+rail is wired (`aisr chatgpt`) but has not been validated against a large real export
+(`aisr/adapters/chatgpt.py`).
 
 ## The IR (`aisr/ir.py`)
 
@@ -152,17 +153,17 @@ in as `groups` (`gemini.py:21-29`); the adapter itself only turns records into I
   (`gemini.py:87-90`). Every other verb is a **feature event** rendered as a single
   explicit `event` turn — "never as a fabricated model reply" (`gemini.py:79-85`). That
   arithmetic is why the real-corpus build reports 2·967 + 93 = **2027 turns**
-  (`build_gemini.py:137` prints exactly this expectation).
-- Grouping strategies live in `build_gemini.py`:
+  (`aisr/loaders.py` prints exactly this expectation).
+- Grouping strategies live in `aisr/loaders.py`:
   - **Harvest (TRUE grouping):** with a `gemini_full_harvest.json` from the live web app
     (the only system that knows the real boundaries), each harvested user turn is joined
     to its Takeout record by exact normalised prompt text; unmatched records are reported
-    in an `(unmatched Takeout activity)` group, never dropped (`build_gemini.py:46-73`).
+    in an `(unmatched Takeout activity)` group, never dropped (`aisr/loaders.py`).
   - **Gap heuristic (PROVISIONAL):** without a harvest, split on a >30-minute gap or a
     Gem change, with every group explicitly titled "(provisional group N)" so a reader
-    never mistakes it for ground truth (`build_gemini.py:23`, `build_gemini.py:76-90`).
+    never mistakes it for ground truth (`aisr/loaders.py`, `aisr/loaders.py`).
   - The mode used is stamped into `_fidelity-report.json` as `grouping_mode`
-    (`build_gemini.py:128-131`).
+    (`aisr/loaders.py`).
 
 ### ChatGPT (`aisr/adapters/chatgpt.py`) — a `mapping`/`current_node` tree
 
@@ -208,7 +209,7 @@ prompt-injection characters. The policy (`sanitize.py:1-19`):
   invisible-text smuggling — category `Mn`, so no category test catches them); invisible
   Hangul fillers (`sanitize.py:26-28`); `Cc` controls except tab/LF/CR; and categories
   `Cf`, `Co`, `Cn`, `Cs` (a lone surrogate survives `json.loads` but would abort a UTF-8
-  write — see the `errors="replace"` writer at `build_claude.py:92-95`).
+  write — see the `errors="replace"` writer at `aisr/build.py`).
 - **Callers must pass decoded strings**: Claude exports store invisibles as `\uXXXX` JSON
   escapes, so scanning raw file bytes reports a false "clean" (`sanitize.py:16-19`).
 
@@ -304,26 +305,26 @@ conversation (`audit.py:43-48`).
 
 ## Build drivers
 
-`build_claude.py` (`build_claude.py:30-89`) and `build_gemini.py`
-(`build_gemini.py:93-141`) wire the pipeline per conversation and write:
+`aisr/build.py` (`aisr/build.py`) and `aisr/loaders.py`
+(`aisr/loaders.py`) wire the pipeline per conversation and write:
 
 - `<out>/html/NNN-title.html` and `<out>/md/NNN-title.md` (Windows-illegal filename
-  characters scrubbed, names truncated — `build_claude.py:21-27`);
-- `index.html` (Claude build, `build_claude.py:103-117`);
+  characters scrubbed, names truncated — `aisr/build.py`);
+- `index.html` (Claude build, `aisr/build.py`);
 - `_hidden-char-audit.json` — per-conversation hit counts and codepoints;
 - `_fidelity-report.json` — pass/fail per conversation with coverage and a
   missing-token sample (plus `grouping_mode` for Gemini).
 
 Robustness decisions: each conversation renders inside its own `try/except` so one
-malformed conversation can never truncate the corpus (`build_claude.py:10-11`,
-`build_claude.py:74-76`); the input glob excludes the output directory so the tool never
-ingests its own output (`build_claude.py:34-36`); writes use `errors="replace"` so an
+malformed conversation can never truncate the corpus (`aisr/build.py`,
+`aisr/build.py`); the input glob excludes the output directory so the tool never
+ingests its own output (`aisr/build.py`); writes use `errors="replace"` so an
 unpaired surrogate that slipped through cannot abort a build mid-corpus
-(`build_claude.py:92-95`); both builds end with terminal-state stdout markers
-(`FIDELITY_GATE_PASSED`, `ERRORS`, ... — `build_claude.py:84-88`,
-`build_gemini.py:134-140`). `build_claude.py --demo` renders a fully synthetic
+(`aisr/build.py`); both builds end with terminal-state stdout markers
+(`FIDELITY_GATE_PASSED`, `ERRORS`, ... — `aisr/build.py`,
+`aisr/loaders.py`). `aisr demo` renders a fully synthetic
 conversation exercising every major block type, with no real content
-(`build_claude.py:120-148`).
+(`aisr/build.py`).
 
 ## Status and known gaps
 
@@ -334,7 +335,7 @@ and not part of the repo):
 - **Gemini rail:** 1060 real Takeout records -> 2027 turns (consistent with the verb
   census at `gemini.py:12-13`: 2·967 Prompted + 93 events). Grouping is **provisional**
   (gap heuristic) until a web-app harvest supplies true boundaries
-  (`build_gemini.py:6-11`).
+  (`aisr/loaders.py`).
 - **ChatGPT rail:** adapter written, **UNVERIFIED** against a real export
   (`chatgpt.py:18-19`); no build driver yet.
 

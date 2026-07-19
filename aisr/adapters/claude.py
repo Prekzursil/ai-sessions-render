@@ -191,14 +191,14 @@ def _active_path(messages):
     while stack:
         m = stack.pop()
         u = m.get("uuid")
-        if u in reachable:
-            continue
+        if u in reachable:            # pragma: no cover - defensive: each message has a
+            continue                  # single parent, so BFS cannot revisit a node
         reachable.add(u)
         stack.extend(children.get(u, []))
     orphans = [m for m in messages
                if m.get("uuid") not in reachable and m.get("uuid") not in seen]
     for m in sorted(orphans, key=_ts):
-        if m.get("uuid") in seen:
+        if m.get("uuid") in seen:     # pragma: no cover - orphans are pre-filtered `not in seen`
             continue
         seen.add(m.get("uuid"))
         path.append((m, None))

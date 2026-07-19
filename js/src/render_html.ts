@@ -65,7 +65,7 @@ function jsonDumps(value: unknown): string {
  * those today, but a markdown-it upgrade or an attrs plugin would silently disable
  * the only href control. Match any anchor and drop what we cannot verify.
  */
-function hardenLinks(frag: string): string {
+export function hardenLinks(frag: string): string {
   return frag.replace(A_ANY, (_m, attrs: string) => {
     const href = /href\s*=\s*("([^"]*)"|'([^']*)'|([^\s>]+))/i.exec(attrs);
     if (!href) return "<a>";
@@ -106,7 +106,7 @@ function badgeTextNodes(frag: string): string {
  * as a broken image and quietly contradicts the no-egress promise. Replace it with a
  * chip naming the alt text plus an explicit link.
  */
-function defangImages(frag: string): string {
+export function defangImages(frag: string): string {
   return frag.replace(IMG, (tag: string, src: string) => {
     const altM = /alt="([^"]*)"/i.exec(tag);
     const alt = escapeHtml(altM ? altM[1]! : "image", false);
@@ -151,9 +151,9 @@ function pre(text: unknown): string {
   return `<pre>${badgeInvisibles(escapeHtml(typeof text === "string" ? text : "", false))}</pre>`;
 }
 
-function citationsHtml(cites: Citation[] | undefined): string {
+function citationsHtml(cites: Citation[]): string {
   const pills: string[] = [];
-  for (const c of cites ?? []) {
+  for (const c of cites) {
     if (c === null || typeof c !== "object") continue;
     const url = typeof c.url === "string" ? c.url : "";
     const label = neutralizeHtml(c.title || url);
@@ -172,7 +172,7 @@ function citationsHtml(cites: Citation[] | undefined): string {
 }
 
 function blockHtml(b: Block): string {
-  const d = b.data ?? {};
+  const d = b.data;
   const str = (k: string): string => (typeof d[k] === "string" ? (d[k] as string) : "");
 
   if (b.type === "text") {
@@ -286,7 +286,7 @@ function turnHtml(t: Turn): string {
   const who = role === "human" ? "You" : "Claude";
   const av = role === "human" ? "Y" : "C";
   const branch = t.branch ? `<span class="branch">${t.branch.index}/${t.branch.total}</span>` : "";
-  const blocks = (t.blocks ?? []).map(blockHtml).join("");
+  const blocks = t.blocks.map(blockHtml).join("");
   return (
     `<div class="turn ${role}"><div class="role"><span class="avatar">${av}</span>` +
     `${who}${branch}</div><div class="bubble">${blocks}</div></div>`
@@ -300,7 +300,7 @@ export function renderConversationHtml(conv: Conversation, theme = "claude"): st
   const meta = neutralizeHtml(
     [conv.provider, conv.account, conv.created_at].filter((x) => x).join(" · "),
   );
-  const turns = (conv.turns ?? []).map(turnHtml).join("");
+  const turns = conv.turns.map(turnHtml).join("");
   return (
     '<!doctype html>\n<html lang="en"><head><meta charset="utf-8">' +
     `<meta http-equiv="Content-Security-Policy" content="${CSP}">` +
