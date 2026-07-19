@@ -24,8 +24,8 @@ jobs:
           - { os: windows-latest, python: "3.13" }
           - { os: macos-latest, python: "3.13" }
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python }}
       - run: python -m pip install --upgrade pip
@@ -36,8 +36,8 @@ jobs:
     name: packaged-artifact smoke test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
       - run: pip install build
@@ -58,7 +58,7 @@ jobs:
           head -c 15 /tmp/demo.html | grep -qi '<!doctype html'
           echo "OK: $(wc -c < /tmp/demo.html) bytes"
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: dist
           path: dist/
