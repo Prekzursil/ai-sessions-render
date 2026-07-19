@@ -338,11 +338,9 @@ describe("chatgpt parseExport shape handling", () => {
 
 describe("gemini adapter edges", () => {
   it("ungrouped parseAll wraps all records (null and empty groups)", () => {
-    for (const groups of [null, []] as const) {
-      const convs = gemini.parseAll([{ verb: "Prompted", prompt: "q", response_md: "a" }], groups);
-      expect(convs.length).toBe(1);
-      expect(convs[0]!.id).toBe("all");
-    }
+    const recs = [{ verb: "Prompted", prompt: "q", response_md: "a" }];
+    expect(gemini.parseAll(recs, null)[0]!.id).toBe("all");   // null groups
+    expect(gemini.parseAll(recs, [])[0]!.id).toBe("all");     // empty groups array
   });
 
   it("records a repeated gem once, and no gems yields empty meta", () => {
