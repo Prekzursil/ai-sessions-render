@@ -1,0 +1,28 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+.coverage
+htmlcov/
+# build artifacts
+dist/
+build/
+*.egg-info/
+.venv/
+node_modules/
+# --- DATA SAFETY: never commit real conversation exports or rendered output ---
+# (deny-by-default for anything that could hold private conversation content)
+_site/
+_site_gemini/
+/real_data/
+exports/
+data/
+out/
+*.har
+conversations.json
+chatgpt_export.json
+chatgpt_projects_export.json
+gemini_full_harvest.json
+transcript.json
+*.local.json
+*.local.html
+# Real exports should live OUTSIDE this tree entirely — this is the last line of defence.

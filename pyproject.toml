@@ -1,0 +1,62 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "ai-sessions-render"
+version = "0.1.0"
+description = "Local, offline, faithful renderer for ChatGPT / Claude / Gemini session exports (HTML + Markdown). No network, no egress."
+readme = "README.md"
+requires-python = ">=3.9"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "Prekzursil" }]
+keywords = [
+    "chatgpt", "claude", "gemini", "export", "transcript", "conversation",
+    "markdown", "html", "offline", "privacy", "archive",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Intended Audience :: End Users/Desktop",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Communications :: Chat",
+    "Topic :: Text Processing :: Markup :: HTML",
+    "Topic :: Utilities",
+]
+dependencies = ["markdown-it-py>=2.2"]
+
+[project.optional-dependencies]
+dev = ["pytest>=7"]
+
+[project.urls]
+Homepage = "https://github.com/Prekzursil/ai-sessions-render"
+Source = "https://github.com/Prekzursil/ai-sessions-render"
+Issues = "https://github.com/Prekzursil/ai-sessions-render/issues"
+
+[project.scripts]
+aisr = "aisr.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["aisr"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/aisr",
+    "/tests",
+    "/README.md",
+    "/LICENSE",
+    "/SECURITY.md",
+    "/ARCHITECTURE.md",
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+addopts = "-q"

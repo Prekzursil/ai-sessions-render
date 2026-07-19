@@ -1,0 +1,21 @@
+# Normalise stored blobs to LF so a Windows working copy and Linux CI check the
+# SAME bytes. Formatters/linters can make different decisions on CRLF vs LF, which
+# produces a green local run against a red CI run for an identical commit.
+* text=auto eol=lf
+
+*.py    text eol=lf
+*.md    text eol=lf
+*.toml  text eol=lf
+*.css   text eol=lf
+*.json  text eol=lf
+*.yml   text eol=lf
+*.yaml  text eol=lf
+*.js    text eol=lf
+*.ts    text eol=lf
+*.sh    text eol=lf
+*.ps1   text eol=crlf
+
+*.png binary
+*.jpg binary
+*.gif binary
+*.pdf binary
