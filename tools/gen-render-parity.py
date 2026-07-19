@@ -19,7 +19,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from aisr import ir, render_html, render_md          # noqa: E402
+from aisr import audit, ir, render_html, render_md, verify   # noqa: E402
 from aisr.demo import demo_conversation              # noqa: E402
 
 OUT = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
@@ -90,10 +90,14 @@ def conversations():
 def main():
     data = []
     for conv in conversations():
+        html = render_html.render_conversation_html(conv)
         data.append({
             "ir": dataclasses.asdict(conv),
             "md": render_md.render_conversation_md(conv),
-            "html": render_html.render_conversation_html(conv),
+            "html": html,
+            "verify": verify.verify(conv, html),
+            "prose_tokens": verify.prose_tokens(conv),
+            "audit": audit.hidden_char_hits(conv),
         })
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     with open(OUT, "w", encoding="utf-8", newline="\n") as fh:

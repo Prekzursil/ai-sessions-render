@@ -9,6 +9,7 @@ build/
 *.egg-info/
 .venv/
 node_modules/
+*.tgz
 # --- DATA SAFETY: never commit real conversation exports or rendered output ---
 # (deny-by-default for anything that could hold private conversation content)
 _site/
@@ -25,4 +26,8 @@ gemini_full_harvest.json
 transcript.json
 *.local.json
 *.local.html
+# The adapter-parity fixture embeds sampled REAL conversation content for a local
+# byte-for-byte adapter check — it is generated on demand and must NEVER be committed
+# or packaged. The renderer/sanitize parity fixtures are synthetic and ARE committed.
+js/test/fixtures/adapter-parity.json
 # Real exports should live OUTSIDE this tree entirely — this is the last line of defence.
