@@ -1,0 +1,731 @@
+{
+ "unidata_version": "16.0.0",
+ "cases": [
+  {
+   "input": "",
+   "neutralize_html": "",
+   "badge_invisibles": "",
+   "ncr_invisibles": "",
+   "sanitize_for_copy": "",
+   "scan_invisibles": []
+  },
+  {
+   "input": "plain ascii text",
+   "neutralize_html": "plain ascii text",
+   "badge_invisibles": "plain ascii text",
+   "ncr_invisibles": "plain ascii text",
+   "sanitize_for_copy": "plain ascii text",
+   "scan_invisibles": []
+  },
+  {
+   "input": "a < b & c > d",
+   "neutralize_html": "a &lt; b &amp; c &gt; d",
+   "badge_invisibles": "a < b & c > d",
+   "ncr_invisibles": "a < b & c > d",
+   "sanitize_for_copy": "a < b & c > d",
+   "scan_invisibles": []
+  },
+  {
+   "input": "<script>alert(1)</script>",
+   "neutralize_html": "&lt;script&gt;alert(1)&lt;/script&gt;",
+   "badge_invisibles": "<script>alert(1)</script>",
+   "ncr_invisibles": "<script>alert(1)</script>",
+   "sanitize_for_copy": "<script>alert(1)</script>",
+   "scan_invisibles": []
+  },
+  {
+   "input": "quotes \" and ' and & together",
+   "neutralize_html": "quotes \" and ' and &amp; together",
+   "badge_invisibles": "quotes \" and ' and & together",
+   "ncr_invisibles": "quotes \" and ' and & together",
+   "sanitize_for_copy": "quotes \" and ' and & together",
+   "scan_invisibles": []
+  },
+  {
+   "input": "a\tb\nc\rd",
+   "neutralize_html": "a\tb\nc\rd",
+   "badge_invisibles": "a\tb\nc\rd",
+   "ncr_invisibles": "a\tb\nc\rd",
+   "sanitize_for_copy": "a\tb\nc\rd",
+   "scan_invisibles": []
+  },
+  {
+   "input": "zwsp a\u200bb",
+   "neutralize_html": "zwsp a<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>b",
+   "badge_invisibles": "zwsp a<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>b",
+   "ncr_invisibles": "zwsp a&#x200B;b",
+   "sanitize_for_copy": "zwsp ab",
+   "scan_invisibles": [
+    [
+     6,
+     "U+200B"
+    ]
+   ]
+  },
+  {
+   "input": "bidi x\u202ey",
+   "neutralize_html": "bidi x<span class=\"cp-badge\" data-cp=\"U+202E\" title=\"RIGHT-TO-LEFT OVERRIDE (hidden)\">\u2691</span>y",
+   "badge_invisibles": "bidi x<span class=\"cp-badge\" data-cp=\"U+202E\" title=\"RIGHT-TO-LEFT OVERRIDE (hidden)\">\u2691</span>y",
+   "ncr_invisibles": "bidi x&#x202E;y",
+   "sanitize_for_copy": "bidi xy",
+   "scan_invisibles": [
+    [
+     6,
+     "U+202E"
+    ]
+   ]
+  },
+  {
+   "input": "tag t\udb40\udc41g",
+   "neutralize_html": "tag t<span class=\"cp-badge\" data-cp=\"U+E0041\" title=\"TAG LATIN CAPITAL LETTER A (hidden)\">\u2691</span>g",
+   "badge_invisibles": "tag t<span class=\"cp-badge\" data-cp=\"U+E0041\" title=\"TAG LATIN CAPITAL LETTER A (hidden)\">\u2691</span>g",
+   "ncr_invisibles": "tag t&#xE0041;g",
+   "sanitize_for_copy": "tag tg",
+   "scan_invisibles": [
+    [
+     5,
+     "U+E0041"
+    ]
+   ]
+  },
+  {
+   "input": "pua c\ue200d",
+   "neutralize_html": "pua c<span class=\"cp-badge\" data-cp=\"U+E200\" title=\"unnamed (hidden)\">\u2691</span>d",
+   "badge_invisibles": "pua c<span class=\"cp-badge\" data-cp=\"U+E200\" title=\"unnamed (hidden)\">\u2691</span>d",
+   "ncr_invisibles": "pua c&#xE200;d",
+   "sanitize_for_copy": "pua cd",
+   "scan_invisibles": [
+    [
+     5,
+     "U+E200"
+    ]
+   ]
+  },
+  {
+   "input": "hangul a\u3164b",
+   "neutralize_html": "hangul a<span class=\"cp-badge\" data-cp=\"U+3164\" title=\"HANGUL FILLER (hidden)\">\u2691</span>b",
+   "badge_invisibles": "hangul a<span class=\"cp-badge\" data-cp=\"U+3164\" title=\"HANGUL FILLER (hidden)\">\u2691</span>b",
+   "ncr_invisibles": "hangul a&#x3164;b",
+   "sanitize_for_copy": "hangul ab",
+   "scan_invisibles": [
+    [
+     8,
+     "U+3164"
+    ]
+   ]
+  },
+  {
+   "input": "surrogate a\ud800b",
+   "neutralize_html": "surrogate a<span class=\"cp-badge\" data-cp=\"U+D800\" title=\"unnamed (hidden)\">\u2691</span>b",
+   "badge_invisibles": "surrogate a<span class=\"cp-badge\" data-cp=\"U+D800\" title=\"unnamed (hidden)\">\u2691</span>b",
+   "ncr_invisibles": "surrogate a&#xD800;b",
+   "sanitize_for_copy": "surrogate ab",
+   "scan_invisibles": [
+    [
+     11,
+     "U+D800"
+    ]
+   ]
+  },
+  {
+   "input": "unassigned a\u0870b",
+   "neutralize_html": "unassigned a\u0870b",
+   "badge_invisibles": "unassigned a\u0870b",
+   "ncr_invisibles": "unassigned a\u0870b",
+   "sanitize_for_copy": "unassigned a\u0870b",
+   "scan_invisibles": []
+  },
+  {
+   "input": "\u2764\ufe0f",
+   "neutralize_html": "\u2764\ufe0f",
+   "badge_invisibles": "\u2764\ufe0f",
+   "ncr_invisibles": "\u2764\ufe0f",
+   "sanitize_for_copy": "\u2764\ufe0f",
+   "scan_invisibles": []
+  },
+  {
+   "input": "\ud83d\udc68\u200d\ud83d\udc69",
+   "neutralize_html": "\ud83d\udc68\u200d\ud83d\udc69",
+   "badge_invisibles": "\ud83d\udc68\u200d\ud83d\udc69",
+   "ncr_invisibles": "\ud83d\udc68\u200d\ud83d\udc69",
+   "sanitize_for_copy": "\ud83d\udc68\u200d\ud83d\udc69",
+   "scan_invisibles": []
+  },
+  {
+   "input": "\ud83d\udc68\u200d\ud83d\udc69\u200d\ud83d\udc66",
+   "neutralize_html": "\ud83d\udc68\u200d\ud83d\udc69\u200d\ud83d\udc66",
+   "badge_invisibles": "\ud83d\udc68\u200d\ud83d\udc69\u200d\ud83d\udc66",
+   "ncr_invisibles": "\ud83d\udc68\u200d\ud83d\udc69\u200d\ud83d\udc66",
+   "sanitize_for_copy": "\ud83d\udc68\u200d\ud83d\udc69\u200d\ud83d\udc66",
+   "scan_invisibles": []
+  },
+  {
+   "input": "\ud83c\uddf7\ud83c\uddf4",
+   "neutralize_html": "\ud83c\uddf7\ud83c\uddf4",
+   "badge_invisibles": "\ud83c\uddf7\ud83c\uddf4",
+   "ncr_invisibles": "\ud83c\uddf7\ud83c\uddf4",
+   "sanitize_for_copy": "\ud83c\uddf7\ud83c\uddf4",
+   "scan_invisibles": []
+  },
+  {
+   "input": "a\u200db",
+   "neutralize_html": "a<span class=\"cp-badge\" data-cp=\"U+200D\" title=\"ZERO WIDTH JOINER (hidden)\">\u2691</span>b",
+   "badge_invisibles": "a<span class=\"cp-badge\" data-cp=\"U+200D\" title=\"ZERO WIDTH JOINER (hidden)\">\u2691</span>b",
+   "ncr_invisibles": "a&#x200D;b",
+   "sanitize_for_copy": "ab",
+   "scan_invisibles": [
+    [
+     1,
+     "U+200D"
+    ]
+   ]
+  },
+  {
+   "input": "a\ufe0fb",
+   "neutralize_html": "a<span class=\"cp-badge\" data-cp=\"U+FE0F\" title=\"VARIATION SELECTOR-16 (hidden)\">\u2691</span>b",
+   "badge_invisibles": "a<span class=\"cp-badge\" data-cp=\"U+FE0F\" title=\"VARIATION SELECTOR-16 (hidden)\">\u2691</span>b",
+   "ncr_invisibles": "a&#xFE0F;b",
+   "sanitize_for_copy": "ab",
+   "scan_invisibles": [
+    [
+     1,
+     "U+FE0F"
+    ]
+   ]
+  },
+  {
+   "input": "\u2764\ufe0f\u200d\ud83d\udd25",
+   "neutralize_html": "\u2764\ufe0f<span class=\"cp-badge\" data-cp=\"U+200D\" title=\"ZERO WIDTH JOINER (hidden)\">\u2691</span>\ud83d\udd25",
+   "badge_invisibles": "\u2764\ufe0f<span class=\"cp-badge\" data-cp=\"U+200D\" title=\"ZERO WIDTH JOINER (hidden)\">\u2691</span>\ud83d\udd25",
+   "ncr_invisibles": "\u2764\ufe0f&#x200D;\ud83d\udd25",
+   "sanitize_for_copy": "\u2764\ufe0f\ud83d\udd25",
+   "scan_invisibles": [
+    [
+     2,
+     "U+200D"
+    ]
+   ]
+  },
+  {
+   "input": "\u200d",
+   "neutralize_html": "<span class=\"cp-badge\" data-cp=\"U+200D\" title=\"ZERO WIDTH JOINER (hidden)\">\u2691</span>",
+   "badge_invisibles": "<span class=\"cp-badge\" data-cp=\"U+200D\" title=\"ZERO WIDTH JOINER (hidden)\">\u2691</span>",
+   "ncr_invisibles": "&#x200D;",
+   "sanitize_for_copy": "",
+   "scan_invisibles": [
+    [
+     0,
+     "U+200D"
+    ]
+   ]
+  },
+  {
+   "input": "\ufe0f",
+   "neutralize_html": "<span class=\"cp-badge\" data-cp=\"U+FE0F\" title=\"VARIATION SELECTOR-16 (hidden)\">\u2691</span>",
+   "badge_invisibles": "<span class=\"cp-badge\" data-cp=\"U+FE0F\" title=\"VARIATION SELECTOR-16 (hidden)\">\u2691</span>",
+   "ncr_invisibles": "&#xFE0F;",
+   "sanitize_for_copy": "",
+   "scan_invisibles": [
+    [
+     0,
+     "U+FE0F"
+    ]
+   ]
+  },
+  {
+   "input": "\ud83d\ude00\ufe0f",
+   "neutralize_html": "\ud83d\ude00\ufe0f",
+   "badge_invisibles": "\ud83d\ude00\ufe0f",
+   "ncr_invisibles": "\ud83d\ude00\ufe0f",
+   "sanitize_for_copy": "\ud83d\ude00\ufe0f",
+   "scan_invisibles": []
+  },
+  {
+   "input": "\u200d\ud83d\ude00",
+   "neutralize_html": "<span class=\"cp-badge\" data-cp=\"U+200D\" title=\"ZERO WIDTH JOINER (hidden)\">\u2691</span>\ud83d\ude00",
+   "badge_invisibles": "<span class=\"cp-badge\" data-cp=\"U+200D\" title=\"ZERO WIDTH JOINER (hidden)\">\u2691</span>\ud83d\ude00",
+   "ncr_invisibles": "&#x200D;\ud83d\ude00",
+   "sanitize_for_copy": "\ud83d\ude00",
+   "scan_invisibles": [
+    [
+     0,
+     "U+200D"
+    ]
+   ]
+  },
+  {
+   "input": "\ud83d\ude00\u200d",
+   "neutralize_html": "\ud83d\ude00<span class=\"cp-badge\" data-cp=\"U+200D\" title=\"ZERO WIDTH JOINER (hidden)\">\u2691</span>",
+   "badge_invisibles": "\ud83d\ude00<span class=\"cp-badge\" data-cp=\"U+200D\" title=\"ZERO WIDTH JOINER (hidden)\">\u2691</span>",
+   "ncr_invisibles": "\ud83d\ude00&#x200D;",
+   "sanitize_for_copy": "\ud83d\ude00",
+   "scan_invisibles": [
+    [
+     1,
+     "U+200D"
+    ]
+   ]
+  },
+  {
+   "input": "ordinary sentence\udb40\udd43\udb40\udd35\udb40\udd33\udb40\udd42\udb40\udd35\udb40\udd44",
+   "neutralize_html": "ordinary sentence<span class=\"cp-badge\" data-cp=\"U+E0143\" title=\"VARIATION SELECTOR-84 (hidden)\">\u2691</span><span class=\"cp-badge\" data-cp=\"U+E0135\" title=\"VARIATION SELECTOR-70 (hidden)\">\u2691</span><span class=\"cp-badge\" data-cp=\"U+E0133\" title=\"VARIATION SELECTOR-68 (hidden)\">\u2691</span><span class=\"cp-badge\" data-cp=\"U+E0142\" title=\"VARIATION SELECTOR-83 (hidden)\">\u2691</span><span class=\"cp-badge\" data-cp=\"U+E0135\" title=\"VARIATION SELECTOR-70 (hidden)\">\u2691</span><span class=\"cp-badge\" data-cp=\"U+E0144\" title=\"VARIATION SELECTOR-85 (hidden)\">\u2691</span>",
+   "badge_invisibles": "ordinary sentence<span class=\"cp-badge\" data-cp=\"U+E0143\" title=\"VARIATION SELECTOR-84 (hidden)\">\u2691</span><span class=\"cp-badge\" data-cp=\"U+E0135\" title=\"VARIATION SELECTOR-70 (hidden)\">\u2691</span><span class=\"cp-badge\" data-cp=\"U+E0133\" title=\"VARIATION SELECTOR-68 (hidden)\">\u2691</span><span class=\"cp-badge\" data-cp=\"U+E0142\" title=\"VARIATION SELECTOR-83 (hidden)\">\u2691</span><span class=\"cp-badge\" data-cp=\"U+E0135\" title=\"VARIATION SELECTOR-70 (hidden)\">\u2691</span><span class=\"cp-badge\" data-cp=\"U+E0144\" title=\"VARIATION SELECTOR-85 (hidden)\">\u2691</span>",
+   "ncr_invisibles": "ordinary sentence&#xE0143;&#xE0135;&#xE0133;&#xE0142;&#xE0135;&#xE0144;",
+   "sanitize_for_copy": "ordinary sentence",
+   "scan_invisibles": [
+    [
+     17,
+     "U+E0143"
+    ],
+    [
+     18,
+     "U+E0135"
+    ],
+    [
+     19,
+     "U+E0133"
+    ],
+    [
+     20,
+     "U+E0142"
+    ],
+    [
+     21,
+     "U+E0135"
+    ],
+    [
+     22,
+     "U+E0144"
+    ]
+   ]
+  },
+  {
+   "input": "\udb40\udd00\udb40\udd01\udb40\udd02\udb40\udd03\udb40\udd04\udb40\udd05\udb40\udd06\udb40\udd07\udb40\udd08\udb40\udd09\udb40\udd0a\udb40\udd0b\udb40\udd0c\udb40\udd0d\udb40\udd0e\udb40\udd0f\udb40\udd10\udb40\udd11\udb40\udd12\udb40\udd13",
+   "neutralize_html": "<span class=\"cp-badge\" data-cp=\"U+E0100\" title=\"VARIATION SELECTOR-17 (hidden)\">\u2691</span><span class=\"cp-badge\" data-cp=\"U+E0101\" title=\"VARIATION SELECTOR-18 (hidden)\">\u2691</span><span class=\"cp-badge\" data-cp=\"U+E0102\" title=\"VARIATION SELECTOR-19 (hidden)\">\u2691</span><span class=\"cp-badge\" data-cp=\"U+E0103\" title=\"VARIATION SELECTOR-20 (hidden)\">\u2691</span><span class=\"cp-badge\" data-cp=\"U+E0104\" title=\"VARIATION SELECTOR-21 (hidden)\">\u2691</span><span class=\"cp-badge\" data-cp=\"U+E0105\" title=\"VARIATION SELECTOR-22 (hidden)\">\u2691</span><span class=\"cp-badge\" data-cp=\"U+E0106\" title=\"VARIATION SELECTOR-23 (hidden)\">\u2691</span><span class=\"cp-badge\" data-cp=\"U+E0107\" title=\"VARIATION SELECTOR-24 (hidden)\">\u2691</span><span class=\"cp-badge\" data-cp=\"U+E0108\" title=\"VARIATION SELECTOR-25 (hidden)\">\u2691</span><span class=\"cp-badge\" data-cp=\"U+E0109\" title=\"VARIATION SELECTOR-26 (hidden)\">\u2691</span><span class=\"cp-badge\" data-cp=\"U+E010A\" title=\"VARIATION SELECTOR-27 (hidden)\">\u2691</span><span class=\"cp-badge\" data-cp=\"U+E010B\" title=\"VARIATION SELECTOR-28 (hidden)\">\u2691</span><span class=\"cp-badge\" data-cp=\"U+E010C\" title=\"VARIATION SELECTOR-29 (hidden)\">\u2691</span><span class=\"cp-badge\" data-cp=\"U+E010D\" title=\"VARIATION SELECTOR-30 (hidden)\">\u2691</span><span class=\"cp-badge\" data-cp=\"U+E010E\" title=\"VARIATION SELECTOR-31 (hidden)\">\u2691</span><span class=\"cp-badge\" data-cp=\"U+E010F\" title=\"VARIATION SELECTOR-32 (hidden)\">\u2691</span><span class=\"cp-badge\" data-cp=\"U+E0110\" title=\"VARIATION SELECTOR-33 (hidden)\">\u2691</span><span class=\"cp-badge\" data-cp=\"U+E0111\" title=\"VARIATION SELECTOR-34 (hidden)\">\u2691</span><span class=\"cp-badge\" data-cp=\"U+E0112\" title=\"VARIATION SELECTOR-35 (hidden)\">\u2691</span><span class=\"cp-badge\" data-cp=\"U+E0113\" title=\"VARIATION SELECTOR-36 (hidden)\">\u2691</span>",
+   "badge_invisibles": "<span class=\"cp-badge\" data-cp=\"U+E0100\" title=\"VARIATION SELECTOR-17 (hidden)\">\u2691</span><span class=\"cp-badge\" data-cp=\"U+E0101\" title=\"VARIATION SELECTOR-18 (hidden)\">\u2691</span><span class=\"cp-badge\" data-cp=\"U+E0102\" title=\"VARIATION SELECTOR-19 (hidden)\">\u2691</span><span class=\"cp-badge\" data-cp=\"U+E0103\" title=\"VARIATION SELECTOR-20 (hidden)\">\u2691</span><span class=\"cp-badge\" data-cp=\"U+E0104\" title=\"VARIATION SELECTOR-21 (hidden)\">\u2691</span><span class=\"cp-badge\" data-cp=\"U+E0105\" title=\"VARIATION SELECTOR-22 (hidden)\">\u2691</span><span class=\"cp-badge\" data-cp=\"U+E0106\" title=\"VARIATION SELECTOR-23 (hidden)\">\u2691</span><span class=\"cp-badge\" data-cp=\"U+E0107\" title=\"VARIATION SELECTOR-24 (hidden)\">\u2691</span><span class=\"cp-badge\" data-cp=\"U+E0108\" title=\"VARIATION SELECTOR-25 (hidden)\">\u2691</span><span class=\"cp-badge\" data-cp=\"U+E0109\" title=\"VARIATION SELECTOR-26 (hidden)\">\u2691</span><span class=\"cp-badge\" data-cp=\"U+E010A\" title=\"VARIATION SELECTOR-27 (hidden)\">\u2691</span><span class=\"cp-badge\" data-cp=\"U+E010B\" title=\"VARIATION SELECTOR-28 (hidden)\">\u2691</span><span class=\"cp-badge\" data-cp=\"U+E010C\" title=\"VARIATION SELECTOR-29 (hidden)\">\u2691</span><span class=\"cp-badge\" data-cp=\"U+E010D\" title=\"VARIATION SELECTOR-30 (hidden)\">\u2691</span><span class=\"cp-badge\" data-cp=\"U+E010E\" title=\"VARIATION SELECTOR-31 (hidden)\">\u2691</span><span class=\"cp-badge\" data-cp=\"U+E010F\" title=\"VARIATION SELECTOR-32 (hidden)\">\u2691</span><span class=\"cp-badge\" data-cp=\"U+E0110\" title=\"VARIATION SELECTOR-33 (hidden)\">\u2691</span><span class=\"cp-badge\" data-cp=\"U+E0111\" title=\"VARIATION SELECTOR-34 (hidden)\">\u2691</span><span class=\"cp-badge\" data-cp=\"U+E0112\" title=\"VARIATION SELECTOR-35 (hidden)\">\u2691</span><span class=\"cp-badge\" data-cp=\"U+E0113\" title=\"VARIATION SELECTOR-36 (hidden)\">\u2691</span>",
+   "ncr_invisibles": "&#xE0100;&#xE0101;&#xE0102;&#xE0103;&#xE0104;&#xE0105;&#xE0106;&#xE0107;&#xE0108;&#xE0109;&#xE010A;&#xE010B;&#xE010C;&#xE010D;&#xE010E;&#xE010F;&#xE0110;&#xE0111;&#xE0112;&#xE0113;",
+   "sanitize_for_copy": "",
+   "scan_invisibles": [
+    [
+     0,
+     "U+E0100"
+    ],
+    [
+     1,
+     "U+E0101"
+    ],
+    [
+     2,
+     "U+E0102"
+    ],
+    [
+     3,
+     "U+E0103"
+    ],
+    [
+     4,
+     "U+E0104"
+    ],
+    [
+     5,
+     "U+E0105"
+    ],
+    [
+     6,
+     "U+E0106"
+    ],
+    [
+     7,
+     "U+E0107"
+    ],
+    [
+     8,
+     "U+E0108"
+    ],
+    [
+     9,
+     "U+E0109"
+    ],
+    [
+     10,
+     "U+E010A"
+    ],
+    [
+     11,
+     "U+E010B"
+    ],
+    [
+     12,
+     "U+E010C"
+    ],
+    [
+     13,
+     "U+E010D"
+    ],
+    [
+     14,
+     "U+E010E"
+    ],
+    [
+     15,
+     "U+E010F"
+    ],
+    [
+     16,
+     "U+E0110"
+    ],
+    [
+     17,
+     "U+E0111"
+    ],
+    [
+     18,
+     "U+E0112"
+    ],
+    [
+     19,
+     "U+E0113"
+    ]
+   ]
+  },
+  {
+   "input": "title=\"a\u200bb\"",
+   "neutralize_html": "title=\"a<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>b\"",
+   "badge_invisibles": "title=\"a<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>b\"",
+   "ncr_invisibles": "title=\"a&#x200B;b\"",
+   "sanitize_for_copy": "title=\"ab\"",
+   "scan_invisibles": [
+    [
+     8,
+     "U+200B"
+    ]
+   ]
+  },
+  {
+   "input": "<em>a\u200bb</em>",
+   "neutralize_html": "&lt;em&gt;a<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>b&lt;/em&gt;",
+   "badge_invisibles": "<em>a<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>b</em>",
+   "ncr_invisibles": "<em>a&#x200B;b</em>",
+   "sanitize_for_copy": "<em>ab</em>",
+   "scan_invisibles": [
+    [
+     5,
+     "U+200B"
+    ]
+   ]
+  },
+  {
+   "input": "https://example.com/?q=a\u200bb",
+   "neutralize_html": "https://example.com/?q=a<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>b",
+   "badge_invisibles": "https://example.com/?q=a<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>b",
+   "ncr_invisibles": "https://example.com/?q=a&#x200B;b",
+   "sanitize_for_copy": "https://example.com/?q=ab",
+   "scan_invisibles": [
+    [
+     24,
+     "U+200B"
+    ]
+   ]
+  },
+  {
+   "input": "x\u200bx\u200bx\u200bx\u200bx\u200bx\u200bx\u200bx\u200bx\u200bx\u200bx\u200bx\u200bx\u200bx\u200bx\u200bx\u200bx\u200bx\u200bx\u200bx\u200bx\u200bx\u200bx\u200bx\u200bx\u200bx\u200bx\u200bx\u200bx\u200bx\u200bx\u200bx\u200bx\u200bx\u200bx\u200bx\u200bx\u200bx\u200bx\u200bx\u200bx\u200bx\u200bx\u200bx\u200bx\u200bx\u200bx\u200bx\u200bx\u200bx\u200b",
+   "neutralize_html": "x<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>x<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>x<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>x<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>x<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>x<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>x<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>x<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>x<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>x<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>x<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>x<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>x<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>x<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>x<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>x<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>x<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>x<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>x<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>x<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>x<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>x<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>x<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>x<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>x<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>x<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>x<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>x<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>x<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>x<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>x<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>x<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>x<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>x<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>x<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>x<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>x<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>x<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>x<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>x<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>x<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>x<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>x<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>x<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>x<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>x<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>x<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>x<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>x<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>x<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>",
+   "badge_invisibles": "x<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>x<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>x<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>x<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>x<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>x<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>x<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>x<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>x<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>x<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>x<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>x<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>x<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>x<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>x<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>x<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>x<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>x<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>x<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>x<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>x<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>x<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>x<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>x<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>x<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>x<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>x<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>x<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>x<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>x<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>x<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>x<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>x<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>x<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>x<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>x<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>x<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>x<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>x<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>x<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>x<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>x<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>x<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>x<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>x<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>x<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>x<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>x<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>x<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>x<span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span>",
+   "ncr_invisibles": "x&#x200B;x&#x200B;x&#x200B;x&#x200B;x&#x200B;x&#x200B;x&#x200B;x&#x200B;x&#x200B;x&#x200B;x&#x200B;x&#x200B;x&#x200B;x&#x200B;x&#x200B;x&#x200B;x&#x200B;x&#x200B;x&#x200B;x&#x200B;x&#x200B;x&#x200B;x&#x200B;x&#x200B;x&#x200B;x&#x200B;x&#x200B;x&#x200B;x&#x200B;x&#x200B;x&#x200B;x&#x200B;x&#x200B;x&#x200B;x&#x200B;x&#x200B;x&#x200B;x&#x200B;x&#x200B;x&#x200B;x&#x200B;x&#x200B;x&#x200B;x&#x200B;x&#x200B;x&#x200B;x&#x200B;x&#x200B;x&#x200B;x&#x200B;",
+   "sanitize_for_copy": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+   "scan_invisibles": [
+    [
+     1,
+     "U+200B"
+    ],
+    [
+     3,
+     "U+200B"
+    ],
+    [
+     5,
+     "U+200B"
+    ],
+    [
+     7,
+     "U+200B"
+    ],
+    [
+     9,
+     "U+200B"
+    ],
+    [
+     11,
+     "U+200B"
+    ],
+    [
+     13,
+     "U+200B"
+    ],
+    [
+     15,
+     "U+200B"
+    ],
+    [
+     17,
+     "U+200B"
+    ],
+    [
+     19,
+     "U+200B"
+    ],
+    [
+     21,
+     "U+200B"
+    ],
+    [
+     23,
+     "U+200B"
+    ],
+    [
+     25,
+     "U+200B"
+    ],
+    [
+     27,
+     "U+200B"
+    ],
+    [
+     29,
+     "U+200B"
+    ],
+    [
+     31,
+     "U+200B"
+    ],
+    [
+     33,
+     "U+200B"
+    ],
+    [
+     35,
+     "U+200B"
+    ],
+    [
+     37,
+     "U+200B"
+    ],
+    [
+     39,
+     "U+200B"
+    ],
+    [
+     41,
+     "U+200B"
+    ],
+    [
+     43,
+     "U+200B"
+    ],
+    [
+     45,
+     "U+200B"
+    ],
+    [
+     47,
+     "U+200B"
+    ],
+    [
+     49,
+     "U+200B"
+    ],
+    [
+     51,
+     "U+200B"
+    ],
+    [
+     53,
+     "U+200B"
+    ],
+    [
+     55,
+     "U+200B"
+    ],
+    [
+     57,
+     "U+200B"
+    ],
+    [
+     59,
+     "U+200B"
+    ],
+    [
+     61,
+     "U+200B"
+    ],
+    [
+     63,
+     "U+200B"
+    ],
+    [
+     65,
+     "U+200B"
+    ],
+    [
+     67,
+     "U+200B"
+    ],
+    [
+     69,
+     "U+200B"
+    ],
+    [
+     71,
+     "U+200B"
+    ],
+    [
+     73,
+     "U+200B"
+    ],
+    [
+     75,
+     "U+200B"
+    ],
+    [
+     77,
+     "U+200B"
+    ],
+    [
+     79,
+     "U+200B"
+    ],
+    [
+     81,
+     "U+200B"
+    ],
+    [
+     83,
+     "U+200B"
+    ],
+    [
+     85,
+     "U+200B"
+    ],
+    [
+     87,
+     "U+200B"
+    ],
+    [
+     89,
+     "U+200B"
+    ],
+    [
+     91,
+     "U+200B"
+    ],
+    [
+     93,
+     "U+200B"
+    ],
+    [
+     95,
+     "U+200B"
+    ],
+    [
+     97,
+     "U+200B"
+    ],
+    [
+     99,
+     "U+200B"
+    ]
+   ]
+  },
+  {
+   "input": "mixed \u200b \u202e \ue200 \u3164 \ufe01 \udb40\udc41 end",
+   "neutralize_html": "mixed <span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span> <span class=\"cp-badge\" data-cp=\"U+202E\" title=\"RIGHT-TO-LEFT OVERRIDE (hidden)\">\u2691</span> <span class=\"cp-badge\" data-cp=\"U+E200\" title=\"unnamed (hidden)\">\u2691</span> <span class=\"cp-badge\" data-cp=\"U+3164\" title=\"HANGUL FILLER (hidden)\">\u2691</span> <span class=\"cp-badge\" data-cp=\"U+FE01\" title=\"VARIATION SELECTOR-2 (hidden)\">\u2691</span> <span class=\"cp-badge\" data-cp=\"U+E0041\" title=\"TAG LATIN CAPITAL LETTER A (hidden)\">\u2691</span> end",
+   "badge_invisibles": "mixed <span class=\"cp-badge\" data-cp=\"U+200B\" title=\"ZERO WIDTH SPACE (hidden)\">\u2691</span> <span class=\"cp-badge\" data-cp=\"U+202E\" title=\"RIGHT-TO-LEFT OVERRIDE (hidden)\">\u2691</span> <span class=\"cp-badge\" data-cp=\"U+E200\" title=\"unnamed (hidden)\">\u2691</span> <span class=\"cp-badge\" data-cp=\"U+3164\" title=\"HANGUL FILLER (hidden)\">\u2691</span> <span class=\"cp-badge\" data-cp=\"U+FE01\" title=\"VARIATION SELECTOR-2 (hidden)\">\u2691</span> <span class=\"cp-badge\" data-cp=\"U+E0041\" title=\"TAG LATIN CAPITAL LETTER A (hidden)\">\u2691</span> end",
+   "ncr_invisibles": "mixed &#x200B; &#x202E; &#xE200; &#x3164; &#xFE01; &#xE0041; end",
+   "sanitize_for_copy": "mixed       end",
+   "scan_invisibles": [
+    [
+     6,
+     "U+200B"
+    ],
+    [
+     8,
+     "U+202E"
+    ],
+    [
+     10,
+     "U+E200"
+    ],
+    [
+     12,
+     "U+3164"
+    ],
+    [
+     14,
+     "U+FE01"
+    ],
+    [
+     16,
+     "U+E0041"
+    ]
+   ]
+  },
+  {
+   "input": "astral \ud834\udd1e \ud840\udc00 and \u00e9\u0301 combining",
+   "neutralize_html": "astral \ud834\udd1e \ud840\udc00 and \u00e9\u0301 combining",
+   "badge_invisibles": "astral \ud834\udd1e \ud840\udc00 and \u00e9\u0301 combining",
+   "ncr_invisibles": "astral \ud834\udd1e \ud840\udc00 and \u00e9\u0301 combining",
+   "sanitize_for_copy": "astral \ud834\udd1e \ud840\udc00 and \u00e9\u0301 combining",
+   "scan_invisibles": []
+  }
+ ],
+ "urls": [
+  {
+   "url": "https://example.com",
+   "safe": true
+  },
+  {
+   "url": "http://x.y/z",
+   "safe": true
+  },
+  {
+   "url": "javascript:alert(1)",
+   "safe": false
+  },
+  {
+   "url": "data:text/html,<script>",
+   "safe": false
+  },
+  {
+   "url": "file:///etc/passwd",
+   "safe": false
+  },
+  {
+   "url": "  JavaScript:alert(1)",
+   "safe": false
+  },
+  {
+   "url": "",
+   "safe": false
+  },
+  {
+   "url": "  https://ok.example  ",
+   "safe": true
+  },
+  {
+   "url": "HTTPS://SHOUTY.EXAMPLE",
+   "safe": true
+  },
+  {
+   "url": "//protocol-relative",
+   "safe": false
+  },
+  {
+   "url": "ftp://x",
+   "safe": false
+  },
+  {
+   "url": "mailto:a@b",
+   "safe": false
+  }
+ ]
+}

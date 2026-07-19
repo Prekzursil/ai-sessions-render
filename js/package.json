@@ -1,0 +1,64 @@
+{
+  "name": "ai-sessions-render",
+  "version": "0.1.0",
+  "description": "Local, offline, faithful renderer for ChatGPT / Claude / Gemini session exports (HTML + Markdown). No network, no egress.",
+  "keywords": [
+    "chatgpt",
+    "claude",
+    "gemini",
+    "export",
+    "transcript",
+    "conversation",
+    "markdown",
+    "html",
+    "offline",
+    "privacy",
+    "archive"
+  ],
+  "license": "MIT",
+  "author": "Prekzursil",
+  "homepage": "https://github.com/Prekzursil/ai-sessions-render",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Prekzursil/ai-sessions-render.git",
+    "directory": "js"
+  },
+  "bugs": {
+    "url": "https://github.com/Prekzursil/ai-sessions-render/issues"
+  },
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "bin": {
+    "aisr": "dist/cli.js"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run build && npm test"
+  },
+  "dependencies": {
+    "markdown-it": "14.3.0"
+  },
+  "devDependencies": {
+    "@types/markdown-it": "^14.1.2",
+    "@types/node": "^22.10.2",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
+  }
+}
