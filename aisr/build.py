@@ -29,6 +29,8 @@ THEMES = {
                 "link": "#7ab7ff", "muted": "#a0a0a0"},
     "gemini": {"title": "Gemini sessions", "bg": "#1e1f20", "fg": "#e3e3e3",
                "link": "#8ab4f8", "muted": "#9aa0a6"},
+    "codex": {"title": "Codex sessions", "bg": "#0d1117", "fg": "#e6edf3",
+              "link": "#58a6ff", "muted": "#8b949e"},
 }
 _FALLBACK_THEME = {"title": "Sessions", "bg": "#1b1b1b", "fg": "#ededed",
                    "link": "#7ab7ff", "muted": "#999999"}

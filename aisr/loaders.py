@@ -15,7 +15,7 @@ import os
 import re
 from datetime import datetime, timedelta
 
-from aisr.adapters import chatgpt, claude, gemini
+from aisr.adapters import chatgpt, claude, codex, gemini
 
 GAP = timedelta(minutes=30)
 _WS = re.compile(r"\s+")
@@ -67,6 +67,37 @@ def load_claude(src, out_dir=None):
                 convs.append(claude.parse_design_chat(data))
             else:
                 convs.extend(claude.parse_export(data))
+        except Exception as e:
+            errors.append({"file": os.path.basename(f), "stage": "adapt", "error": repr(e)})
+    return convs, errors
+
+
+# ---------------------------------------------------------------------------- codex
+
+def load_codex(src, out_dir=None):
+    """A Codex task export (codex.json), or a directory holding one.
+
+    Kept separate from load_chatgpt on purpose: codex.json is a THIRD shape with no
+    mapping/current_node/messages, so the ChatGPT adapter reads it as a corpus of
+    zero conversations — silently, with a success exit code.
+    """
+    convs, errors = [], []
+    if os.path.isfile(src):
+        files = [src]
+    else:
+        files = sorted(glob.glob(os.path.join(src, "**", "*.json"), recursive=True))
+    if out_dir:
+        # never ingest our own output (the site dir often lives inside the source dir)
+        out_abs = os.path.abspath(out_dir) + os.sep
+        files = [f for f in files if not os.path.abspath(f).startswith(out_abs)]
+    for f in files:
+        try:
+            data = _load_json(f)
+        except Exception as e:
+            errors.append({"file": os.path.basename(f), "stage": "parse", "error": repr(e)})
+            continue
+        try:
+            convs.extend(codex.parse_export(data))
         except Exception as e:
             errors.append({"file": os.path.basename(f), "stage": "adapt", "error": repr(e)})
     return convs, errors

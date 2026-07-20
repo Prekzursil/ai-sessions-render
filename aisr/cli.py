@@ -6,6 +6,7 @@ and two reports (a text-exact fidelity gate and a hidden-unicode audit).
 
   aisr claude   <export.json | dir>  <out_dir>
   aisr chatgpt  <conversations.json> <out_dir> [--projects FILE]
+  aisr codex    <codex.json>         <out_dir>
   aisr gemini   <transcript.json>    <out_dir> [--harvest FILE]
   aisr demo     <out.html>
 """
@@ -32,6 +33,11 @@ def build_parser():
     g.add_argument("out_dir")
     g.add_argument("--projects", default=None,
                    help="optional second export whose records carry __project_id")
+
+    x = sub.add_parser("codex", help="Codex task export (codex.json) — a THIRD shape, "
+                                     "NOT readable by the chatgpt subcommand")
+    x.add_argument("src")
+    x.add_argument("out_dir")
 
     m = sub.add_parser("gemini", help="Google Takeout 'Gemini Apps' activity transcript.json")
     m.add_argument("src")
@@ -75,6 +81,9 @@ def main(argv=None):
         convs, errors, proj_of = loaders.load_chatgpt(args.src, args.projects)
         report = build.render_corpus(convs, args.out_dir, provider="chatgpt", load_errors=errors,
                                      meta_of=lambda c: proj_of.get(c.id, ""))
+    elif args.cmd == "codex":
+        convs, errors = loaders.load_codex(args.src, args.out_dir)
+        report = build.render_corpus(convs, args.out_dir, provider="codex", load_errors=errors)
     elif args.cmd == "gemini":
         convs, errors, extra = loaders.load_gemini(args.src, args.harvest)
         report = build.render_corpus(convs, args.out_dir, provider="gemini", load_errors=errors,
