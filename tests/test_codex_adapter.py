@@ -122,8 +122,23 @@ def test_git_branch_string_never_reaches_turn_branch():
     raises TypeError and kills the render of EVERY conversation."""
     c = codex.parse_conversation(_thread())
     assert all(t.branch is None for t in c.turns)
-    assert "codex/feature" in json.dumps(c.meta)          # preserved, just not there
+    # preserved, just not there. Pinned FIELD-BY-FIELD: an existence-anywhere check
+    # on json.dumps(c.meta) is satisfied by turn_meta[].branch independently, so it
+    # asserts nothing about meta["branch"] itself.
+    assert c.meta["branch"] == "codex/feature"
+    assert [m["branch"] for m in c.meta["turn_meta"]] == ["codex/feature"]
     render_html.render_conversation_html(c)               # must not raise
+
+
+def test_conversation_branch_is_the_first_non_empty_turn_branch():
+    """The first assistant turn deliberately carries NO branch, so only a
+    first-NON-EMPTY selection can produce the asserted value — a first-element or a
+    constant-empty implementation both fail here."""
+    c = codex.parse_conversation(_thread(turns=[
+        _user_turn(), _asst_turn(tid="a1", branch=""),
+        _user_turn(tid="u2"), _asst_turn(tid="a2", branch="codex/second")]))
+    assert c.meta["branch"] == "codex/second"
+    assert [m["branch"] for m in c.meta["turn_meta"]] == ["", "codex/second"]
 
 
 def test_turn_provenance_is_preserved_in_conversation_meta():
@@ -196,6 +211,20 @@ def test_an_unprefixed_status_value_also_normalises():
     c = codex.parse_conversation(_thread(turns=[
         _user_turn(), _asst_turn(status="FAILED", items=[])]))
     assert c.turns[1].blocks[0].data["name"] == "task FAILED"
+
+
+def test_the_provenance_copy_of_the_status_is_normalised_too_not_just_the_header():
+    """The status is read TWICE — once for the block header and once inside
+    _provenance, which render_html JSON-dumps into all 22 status blocks. Asserting
+    only the header leaves the second call site blind, and a raw read there prints
+    the literal 'TaskTurnStatusEnum.FAILED' on the page: the exact leak this
+    module's trap exists to kill, with the header still reading correctly."""
+    c = codex.parse_conversation(_thread(turns=[
+        _user_turn(), _asst_turn(status="TaskTurnStatusEnum.FAILED", items=[])]))
+    assert c.meta["turn_meta"][0]["turn_status"] == "FAILED"
+    html = render_html.render_conversation_html(c)
+    assert '"turn_status": "FAILED"' in html               # not merely absent
+    assert "TaskTurnStatusEnum" not in html
 
 
 # ------------------------------------------------------------------ user inputs
@@ -373,6 +402,20 @@ def test_repo_snapshot_becomes_a_collapsed_attachment_with_range_markers():
     assert b.data["ranges"][1]["contains_end_of_file"] is True
 
 
+def test_attachment_file_size_measures_its_body_so_md_prints_real_byte_counts():
+    """render_md falls back to a literal '?' whenever file_size is falsy, so a size
+    that does not measure the body puts '? bytes' on all 296 attachments — the
+    symptom the field exists to prevent. Pinned RELATIONALLY to the body rather than
+    to a magic number, so it rejects any constant and survives fixture edits."""
+    c = codex.parse_conversation(_thread(turns=[
+        _user_turn(), _asst_turn(items=[_snapshot()])]))
+    b = c.turns[1].blocks[0]
+    assert b.data["file_size"] == len(b.data["extracted_content"]) > 0
+    md = render_md.render_conversation_md(c)
+    assert "(py, %d bytes)" % b.data["file_size"] in md
+    assert "? bytes" not in md
+
+
 def test_snapshot_body_survives_a_non_string_line_and_a_non_list_content():
     c = codex.parse_conversation(_thread(turns=[_user_turn(), _asst_turn(items=[
         _snapshot(lrcs=[{"line_range_start": 1, "line_range_end": 3,
@@ -432,6 +475,25 @@ def test_pr_metadata_block_carries_the_turn_level_pr_fields():
     meta = [b for b in c.turns[1].blocks if b.data.get("name") == "pull_request"][0]
     assert meta.data["input"]["external_pull_request_id"] == "abcd"
     assert meta.data["input"]["branch"] == "codex/feature"
+
+
+def test_pr_metadata_input_dict_is_pinned_key_for_key():
+    """render_html JSON-dumps this whole dict onto the page for all 62 pr items, but
+    a per-key subscript assertion is structurally blind to a rename of a key it never
+    reads. Exact-dict equality compares KEY SETS as well as values, so any rename,
+    addition or drop among the five fails. Non-default values throughout, so no
+    hardcoded constant and no value read from the wrong field can satisfy it."""
+    c = codex.parse_conversation(_thread(turns=[
+        _user_turn(), _asst_turn(items=[_pr()], pr_status="created",
+                                 branch_name="codex/bn")]))
+    meta = [b for b in c.turns[1].blocks if b.data.get("name") == "pull_request"][0]
+    assert meta.data["input"] == {"pull_request_status": "created",
+                                  "external_pull_request_id": "abcd",
+                                  "branch": "codex/feature",
+                                  "branch_name": "codex/bn",
+                                  "previous_turn_id": "task_u1"}
+    html = render_html.render_conversation_html(c)
+    assert '"pull_request_status": "created"' in html
 
 
 def test_pr_without_prose_fields_still_emits_its_structure():
