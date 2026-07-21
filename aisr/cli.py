@@ -93,6 +93,13 @@ def main(argv=None):
         return 2
 
     build.print_report(report)
+    # Exit 3 = "loaded, but produced nothing usable". Returning 0 here made a
+    # wrong-provider or drifted export indistinguishable from a good run: the
+    # corpus rendered blank pages and every automated caller saw success. A
+    # genuinely empty input (0 conversations) is not an error -- there was
+    # nothing to lose. Content that went in and did not come out is.
+    if report["conversations"] and not report["turns"]:
+        return 3
     return 0
 
 
