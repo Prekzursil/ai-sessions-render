@@ -187,13 +187,22 @@ describe("gemini", () => {
   });
 
   it("harvest grouping is labelled TRUE and matches", () => {
-    const src = write(join(root, "t.json"), geminiRecords());
-    const harvest = write(join(root, "h.json"), [{ id: "g1", title: "Real", turns: [{ role: "user", text: "hello" }] }]);
+    const src = write(join(root, "t.json"), [
+      ...geminiRecords(),
+      { verb: "Prompted", prompt: "second", response_md: "answer", timestamp_iso: "2026-01-01T10:01:00" },
+    ]);
+    // Reverse harvest order forces turn_idxs.sort(...) to restore source chronology.
+    const harvest = write(join(root, "h.json"), [{ id: "g1", title: "Real", turns: [
+      { role: "user", text: "second" },
+      { role: "user", text: "hello" },
+    ] }]);
     const out = join(root, "out");
     expect(main(["gemini", src, out, "--harvest", harvest])).toBe(0);
     const rep = report(out);
     expect(rep.grouping_mode).toContain("TRUE");
-    expect(rep.harvest_matched_records).toBe(1);
+    expect(rep.harvest_matched_records).toBe(2);
+    const md = readFileSync(join(out, "md", readdirSync(join(out, "md"))[0]!), "utf-8");
+    expect(md.indexOf("hello")).toBeLessThan(md.indexOf("second"));
   });
 
   it("splits provisional groups on a >30min gap and a gem change", () => {
@@ -271,5 +280,20 @@ describe("fidelity report", () => {
     expect(main(["claude", src, out])).toBe(0);
     expect(Number(report(out).hidden_char_conversations)).toBe(1);
     expect(existsSync(join(out, "_hidden-char-audit.json"))).toBe(true);
+  });
+});
+
+describe("module entry point", () => {
+  it("runs main and exits when imported under the built cli.js name", async () => {
+    const originalArgv = process.argv;
+    const exit = vi.spyOn(process, "exit").mockImplementation(() => undefined as never);
+    try {
+      process.argv = [originalArgv[0]!, "/tmp/cli.js", "--help"];
+      vi.resetModules();
+      await import("../src/cli.js");
+      expect(exit).toHaveBeenCalledWith(0);
+    } finally {
+      process.argv = originalArgv;
+    }
   });
 });
