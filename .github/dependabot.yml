@@ -22,8 +22,10 @@ updates:
       js-deps:
         # keep the security-relevant runtime deps ungrouped so they are reviewable
         # on their own; markdown-it is version-pinned for cross-rail byte parity
-        dev-dependencies:
-          dependency-type: "development"
+        # `dependency-type` is a direct group option -- nesting it under an extra
+        # `dev-dependencies:` key is not schema-valid, so the filter never applied
+        # and the group silently matched nothing.
+        dependency-type: "development"
 
   # the workflows themselves
   - package-ecosystem: "github-actions"
