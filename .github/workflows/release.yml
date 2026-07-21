@@ -25,7 +25,32 @@ jobs:
       - run: pip install build
       - run: python -m build
 
-      # never ship an artifact that was not smoke-tested
+      # Upload FIRST, so the uploaded bytes are the bytes `python -m build`
+      # produced. The smoke test runs in a separate job against this immutable
+      # artifact -- see the `smoke` job below for why it cannot live here.
+      - uses: actions/upload-artifact@v7
+        with:
+          name: dist
+          path: dist/
+
+  # The wheel is still never shipped untested -- but the test must not be able to
+  # REWRITE what ships. Installing the wheel executes its unbounded runtime deps
+  # (markdown-it-py>=2.2 -> imported by render_html at CLI start), so running that
+  # in the build job gave a compromised dependency write access to dist/ before
+  # upload. Here it downloads an already-uploaded artifact and holds no token:
+  # a poisoned dep can fail this job, but cannot alter what pypi publishes.
+  smoke:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions: {}          # no token at all; nothing to steal, nothing to push
+    steps:
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - uses: actions/download-artifact@v8
+        with:
+          name: dist
+          path: dist/
       - name: verify the wheel installs and the CLI runs
         run: |
           python -m venv /tmp/venv
@@ -33,18 +58,14 @@ jobs:
           /tmp/venv/bin/aisr demo /tmp/demo.html
           test -s /tmp/demo.html
 
-      - uses: actions/upload-artifact@v7
-        with:
-          name: dist
-          path: dist/
-
   pypi:
-    needs: build
+    needs: [build, smoke]    # publish only if the artifact smoke-tested clean
     runs-on: ubuntu-latest
     environment: pypi
     permissions:
       id-token: write        # required for Trusted Publishing
     steps:
+      # the SAME artifact `smoke` validated -- not a rebuild
       - uses: actions/download-artifact@v8
         with:
           name: dist
