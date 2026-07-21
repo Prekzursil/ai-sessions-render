@@ -184,7 +184,7 @@ function activePath(messages: Rec[]): Array<[Rec, Branch | null]> {
     (m) => !reachable.has(get(m, "uuid")) && !seen.has(get(m, "uuid")),
   );
   for (const m of sortedByTs(orphans, ts)) {
-    /* v8 ignore next */ // orphans are pre-filtered `!seen.has(...)`, so this never fires
+    // Duplicate UUIDs can both pass the pre-filter before the first is added to seen.
     if (seen.has(get(m, "uuid"))) continue;
     seen.add(get(m, "uuid"));
     path.push([m, null]);
