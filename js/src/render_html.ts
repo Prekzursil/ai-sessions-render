@@ -26,6 +26,7 @@ import {
   ncrInvisibles,
   neutralizeHtml,
   sanitizeForCopy,
+  isLocalMediaPath,
 } from "./sanitize.js";
 
 const MD = new MarkdownIt({
@@ -251,8 +252,11 @@ function blockHtml(b: Block): string {
 
   if (b.type === "media") {
     const path = str("path");
-    // LOCAL relative media only; anything with a scheme is shown, never fetched
-    if (path && !path.includes("://") && !path.startsWith("//")) {
+    // LOCAL relative media only; anything else is a chip, never fetched. The check
+    // lives in sanitize.isLocalMediaPath because the obvious inline form
+    // (!includes("://") && !startsWith("//")) is BYPASSABLE -- browsers normalise
+    // "\" to "/" after it runs, so /\host/x.png fetched remotely.
+    if (isLocalMediaPath(path)) {
       const rel = path.includes("/") ? path : "../media/" + path;
       return (
         `<figure class="media"><img src="${escapeHtml(rel, true)}" ` +

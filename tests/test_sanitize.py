@@ -103,6 +103,44 @@ def test_is_safe_url_blocks_dangerous_schemes():
     assert not sanitize.is_safe_url("")
 
 
+def test_is_local_media_path_allows_genuine_relative_paths():
+    assert sanitize.is_local_media_path("pic.png")
+    assert sanitize.is_local_media_path("media/pic.png")
+    assert sanitize.is_local_media_path("a/b/c/pic.png")
+
+
+def test_is_local_media_path_blocks_backslash_protocol_relative():
+    """The bypass this function exists for.
+
+    A browser normalises "\\" to "/" AFTER any naive check, so `/\\host/x.png`
+    reached the DOM as a protocol-relative URL and fetched remotely. Measured 3/3
+    bypasses against the previous inline guard. Normalise BEFORE deciding.
+    """
+    assert not sanitize.is_local_media_path("/\\evil.example.com/x.png")
+    assert not sanitize.is_local_media_path("\\/evil.example.com/x.png")
+    assert not sanitize.is_local_media_path("\\\\evil.example.com\\share\\x.png")
+
+
+def test_is_local_media_path_blocks_traversal_and_absolute():
+    assert not sanitize.is_local_media_path("../../../../etc/passwd")
+    assert not sanitize.is_local_media_path("a/../../b.png")
+    assert not sanitize.is_local_media_path("/etc/passwd")
+    assert not sanitize.is_local_media_path("//evil.example.com/x.png")
+
+
+def test_is_local_media_path_blocks_schemes_and_drives():
+    assert not sanitize.is_local_media_path("https://evil.example.com/x.png")
+    assert not sanitize.is_local_media_path("data:image/svg+xml,<svg onload=alert(1)>")
+    assert not sanitize.is_local_media_path("C:/Windows/System32/x.png")
+    assert not sanitize.is_local_media_path("C:\\Windows\\x.png")
+
+
+def test_is_local_media_path_rejects_empty_and_non_str():
+    assert not sanitize.is_local_media_path("")
+    assert not sanitize.is_local_media_path(None)
+    assert not sanitize.is_local_media_path(123)
+
+
 def test_variation_selector_smuggling_is_neutralised():
     """VS1-16 (U+FE00-FE0F) + VS17-256 (U+E0100-E01EF) are category Mn, so NO
     category test catches them — a 256-value channel carrying arbitrary bytes.

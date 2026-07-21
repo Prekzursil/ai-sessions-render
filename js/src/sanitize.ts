@@ -171,3 +171,25 @@ export function isSafeUrl(u: unknown): boolean {
   const s = (typeof u === "string" ? u : "").trim().toLowerCase();
   return s.startsWith("http://") || s.startsWith("https://");
 }
+
+/**
+ * True only for a genuinely LOCAL, relative media path.
+ *
+ * Guarding with `!path.includes("://") && !path.startsWith("//")` was bypassable:
+ * a browser normalises backslashes to forward slashes AFTER any such check, so
+ * `/\host/x.png` and `\/host/x.png` reached the DOM as protocol-relative URLs and
+ * fetched remotely. `../../../etc/passwd` also passed straight into src=.
+ * Measured 3/3 bypasses on the Python twin before this existed.
+ *
+ * Allowlist, not blocklist: normalise separators FIRST (the browser will), then
+ * require a relative path with no scheme, root anchor, drive letter or traversal.
+ * Mirrors aisr/sanitize.py::is_local_media_path -- keep both rails in step.
+ */
+export function isLocalMediaPath(p: unknown): boolean {
+  const s = typeof p === "string" ? p : "";
+  if (!s) return false;
+  const norm = s.replace(/\\/g, "/");                    // normalise BEFORE deciding
+  if (norm.includes("://") || norm.startsWith("/")) return false;
+  if (norm.startsWith("data:") || norm.split("/")[0].includes(":")) return false;
+  return !norm.split("/").some((seg) => seg === "..");
+}

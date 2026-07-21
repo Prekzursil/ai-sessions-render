@@ -159,3 +159,33 @@ def test_harden_links_fails_closed_on_unusual_anchor_forms():
 def test_html_self_contained_no_remote_refs():
     h = render_html.render_conversation_html(_conv([ir.Turn("human", [ir.Block("text", text="x")])]))
     assert "http://" not in h and "https://" not in h        # no remote deps in the shell/theme
+
+
+def _media(path):
+    return render_html.render_conversation_html(_conv([
+        ir.Turn("assistant", [ir.Block("media", text="", data={"path": path})]),
+    ]))
+
+
+def test_media_local_relative_still_renders():
+    """Control: if this stops rendering, the block below proves nothing."""
+    h = _media("pic.png")
+    assert '<img src="../media/pic.png"' in h
+
+
+def test_media_sink_cannot_be_tricked_into_a_remote_fetch():
+    """The rendered page claims zero remote fetches; the media sink broke that.
+
+    `/\\host/x.png` passed the old guard (it starts with "/\\", not "//") and the
+    browser then normalised the backslash, producing a live protocol-relative
+    fetch -- a tracking pixel in a page opened from a stranger's export. Measured
+    3/3 bypasses before the fix.
+    """
+    for hostile in ("/\\evil.example.com/x.png",
+                    "\\/evil.example.com/x.png",
+                    "//evil.example.com/x.png",
+                    "https://evil.example.com/x.png",
+                    "../../../../../../etc/passwd"):
+        h = _media(hostile)
+        assert "<img" not in h, f"{hostile!r} reached a raw <img>"
+        assert "evil.example.com" not in h or "chip" in h

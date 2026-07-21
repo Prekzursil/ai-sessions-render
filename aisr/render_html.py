@@ -190,8 +190,11 @@ def _block_html(b):
                 % sanitize.neutralize_html(b.text or b.data.get("name") or "event"))
     if b.type == "media":
         path = b.data.get("path") or ""
-        # LOCAL relative media only; anything with a scheme is shown, never fetched
-        if path and "://" not in path and not path.startswith("//"):
+        # LOCAL relative media only; anything else is shown as a chip, never fetched.
+        # The check lives in sanitize.is_local_media_path because the obvious inline
+        # form ("://" not in path and not path.startswith("//")) is BYPASSABLE --
+        # browsers normalise "\" to "/" after it runs, so /\host/x.png fetched remotely.
+        if sanitize.is_local_media_path(path):
             rel = path if "/" in path else ("../media/" + path)
             return ('<figure class="media"><img src="%s" alt="%s" loading="lazy"></figure>'
                     % (html.escape(rel, quote=True), html.escape(path, quote=True)))
