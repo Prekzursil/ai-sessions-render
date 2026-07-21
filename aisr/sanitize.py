@@ -151,3 +151,27 @@ def is_safe_url(u):
     """Allowlist http/https only (kills javascript:, data:, file:, etc.)."""
     u = (u if isinstance(u, str) else "").strip().lower()
     return u.startswith("http://") or u.startswith("https://")
+
+
+def is_local_media_path(p):
+    """True only for a genuinely LOCAL, relative media path.
+
+    Guarding with `"://" not in p and not p.startswith("//")` was bypassable: a
+    browser normalises backslashes to forward slashes AFTER any such check, so
+    `/\\host/x.png` and `\\/host/x.png` reach the DOM as protocol-relative URLs and
+    fetch remotely. `../../../etc/passwd` also passed straight into src=. Measured
+    3/3 bypasses before this function existed.
+
+    Allowlist, not blocklist: normalise separators first, then require a relative
+    path with no scheme, no root anchor, no drive letter and no parent traversal.
+    """
+    p = p if isinstance(p, str) else ""
+    if not p:
+        return False
+    # normalise FIRST -- the browser will, so the check must too
+    norm = p.replace("\\", "/")
+    if "://" in norm or norm.startswith("/"):      # scheme, root-relative, protocol-relative
+        return False
+    if norm.startswith("data:") or ":" in norm.split("/")[0]:   # data:, C:, any drive/scheme
+        return False
+    return not any(seg == ".." for seg in norm.split("/"))      # no parent traversal

@@ -17,12 +17,50 @@ import {
 } from "../src/generated/unicode-data.js";
 import {
   badgeInvisibles,
+  isLocalMediaPath,
   isSafeUrl,
   ncrInvisibles,
   neutralizeHtml,
   sanitizeForCopy,
   scanInvisibles,
 } from "../src/sanitize.js";
+
+describe("isLocalMediaPath — media sink allowlist", () => {
+  // Ported 1:1 from tests/test_sanitize.py — the two rails must agree exactly.
+  it("allows genuine relative paths", () => {
+    expect(isLocalMediaPath("pic.png")).toBe(true);
+    expect(isLocalMediaPath("media/pic.png")).toBe(true);
+    expect(isLocalMediaPath("a/b/c/pic.png")).toBe(true);
+  });
+
+  it("blocks backslash protocol-relative — the actual bypass", () => {
+    // A browser normalises "\" to "/" AFTER a naive check, so these reached the
+    // DOM as protocol-relative URLs and fetched remotely. 3/3 measured on Python.
+    expect(isLocalMediaPath("/\\evil.example.com/x.png")).toBe(false);
+    expect(isLocalMediaPath("\\/evil.example.com/x.png")).toBe(false);
+    expect(isLocalMediaPath("\\\\evil.example.com\\share\\x.png")).toBe(false);
+  });
+
+  it("blocks traversal and absolute paths", () => {
+    expect(isLocalMediaPath("../../../../etc/passwd")).toBe(false);
+    expect(isLocalMediaPath("a/../../b.png")).toBe(false);
+    expect(isLocalMediaPath("/etc/passwd")).toBe(false);
+    expect(isLocalMediaPath("//evil.example.com/x.png")).toBe(false);
+  });
+
+  it("blocks schemes and drive letters", () => {
+    expect(isLocalMediaPath("https://evil.example.com/x.png")).toBe(false);
+    expect(isLocalMediaPath("data:image/svg+xml,<svg onload=alert(1)>")).toBe(false);
+    expect(isLocalMediaPath("C:/Windows/System32/x.png")).toBe(false);
+    expect(isLocalMediaPath("C:\\Windows\\x.png")).toBe(false);
+  });
+
+  it("rejects empty and non-string input", () => {
+    expect(isLocalMediaPath("")).toBe(false);
+    expect(isLocalMediaPath(null)).toBe(false);
+    expect(isLocalMediaPath(123)).toBe(false);
+  });
+});
 
 describe("generated table integrity", () => {
   it("matches the hash stamped by the Python generator", () => {
