@@ -159,3 +159,28 @@ def test_harden_links_fails_closed_on_unusual_anchor_forms():
 def test_html_self_contained_no_remote_refs():
     h = render_html.render_conversation_html(_conv([ir.Turn("human", [ir.Block("text", text="x")])]))
     assert "http://" not in h and "https://" not in h        # no remote deps in the shell/theme
+
+
+def test_pre_escapes_markup_and_badges_invisibles():
+    """_pre is a raw sink: tool bodies reach it verbatim from an untrusted export.
+
+    100% line+branch coverage did NOT protect it — deleting the escape from _pre left
+    the whole suite green (mutation check, 2026-07-21). These assertions kill that mutant.
+    """
+    payload = '</pre><script>SENTINEL</script>​'
+    h = render_html.render_conversation_html(_conv([ir.Turn("assistant", [
+        ir.Block("tool_result", text="", data={"name": "t", "content": payload}),
+    ])]))
+    assert "<script>" not in h                       # tag never survives as markup
+    assert "&lt;script&gt;SENTINEL&lt;/script&gt;" in h
+    assert "</pre><script>" not in h                 # the <pre> container is not escapable
+    assert "​" not in h                         # invisible codepoint is badged, not passed through
+
+
+def test_pre_escapes_tool_use_input_too():
+    """Same sink, the other call site: tool_use serialises input through _pre."""
+    h = render_html.render_conversation_html(_conv([ir.Turn("assistant", [
+        ir.Block("tool_use", text="", data={"name": "t", "input": {"q": "<img src=x onerror=BOOM>"}}),
+    ])]))
+    assert "<img" not in h
+    assert "&lt;img src=x onerror=BOOM&gt;" in h
