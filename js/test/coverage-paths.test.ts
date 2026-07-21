@@ -325,6 +325,25 @@ describe("chatgpt adapter edges", () => {
     // both leaves share create_time 1.0, so the first-iterated leaf wins deterministically
     expect(gotNew || c.turns.length > 0).toBe(true);
   });
+
+  it("fallback ignores malformed, system, and visually-hidden path nodes", () => {
+    const system = node("system", null, ["hidden"], "system", {
+      content_type: "text", parts: ["internal"],
+    });
+    const hidden = node("hidden", "system", ["visible"], "assistant", {
+      content_type: "text", parts: ["also internal"],
+    });
+    hidden.message!.metadata = { is_visually_hidden_from_conversation: true };
+    const c = parse({
+      malformed: null,
+      system,
+      hidden,
+      visible: node("visible", "hidden", [], "user", {
+        content_type: "text", parts: ["shown"],
+      }),
+    }, null);
+    expect(c.turns.map((t) => t.blocks.map((b) => b.text))).toEqual([["shown"]]);
+  });
 });
 
 describe("chatgpt parseExport shape handling", () => {
@@ -453,6 +472,22 @@ describe("claude adapter edges", () => {
     const texts = c.turns.flatMap((t) => t.blocks.map((b) => b.text));
     expect(texts).toContain("a");
     expect(texts).toContain("b");
+  });
+
+  it("deduplicates repeated UUIDs in both reachable and orphaned components", () => {
+    const m = (u: string, parent: string | null, text: string, t: string) => ({
+      uuid: u, parent_message_uuid: parent, sender: "human", created_at: t,
+      content: [{ type: "text", text, citations: [] }], attachments: [], files: [],
+    });
+    const c = claude.parseConversation({ uuid: "c", name: "n", chat_messages: [
+      m("root", null, "first root", "t1"),
+      m("root", null, "duplicate root", "t2"),
+      m("a", "b", "first a", "t3"),
+      m("a", "b", "duplicate a", "t4"),
+      m("b", "a", "b", "t5"),
+    ] });
+    expect(c.turns.filter((t) => t.uuid === "root")).toHaveLength(1);
+    expect(c.turns.filter((t) => t.uuid === "a")).toHaveLength(1);
   });
 
   it("minimal blocks hit the || default fallbacks", () => {
