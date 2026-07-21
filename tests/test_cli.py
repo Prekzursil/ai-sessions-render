@@ -123,6 +123,38 @@ def test_chatgpt_end_to_end(tmp_path):
     assert "hi there" in open(os.path.join(out, "md", md[0]), encoding="utf-8").read()
 
 
+def test_wrong_provider_export_is_not_a_silent_success(tmp_path):
+    """Content in, nothing out, exit 0 was indistinguishable from a good run.
+
+    A Codex-shaped export fed to the ChatGPT loader parses without raising, yields
+    one conversation with ZERO turns and ZERO errors, and used to exit 0. The real
+    turn silently vanished and every automated caller saw success. Measured before
+    the fix: conversations=1, turns=0, errors=0, exit=0.
+    """
+    src = str(tmp_path / "wrong.json")
+    _write(src, [{"archived": False, "id": "x", "title": "codex-shaped",
+                  "turns": [{"role": "user", "content": "CONTENT THAT WOULD VANISH"}]}])
+    assert cli.main(["chatgpt", src, str(tmp_path / "site")]) == 3
+
+
+def test_healthy_export_still_exits_zero(tmp_path):
+    """Control for the test above: a fix that fails healthy runs is just a broken build."""
+    src = str(tmp_path / "ok.json")
+    _write(src, _chatgpt_export())
+    assert cli.main(["chatgpt", src, str(tmp_path / "site")]) == 0
+
+
+def test_empty_input_is_not_an_error(tmp_path):
+    """Zero conversations in means nothing was LOST -- that is not a failure.
+
+    Only content that went in and did not come out is. Guards the fix against
+    over-firing on a legitimately empty export.
+    """
+    src = str(tmp_path / "empty.json")
+    _write(src, [])
+    assert cli.main(["chatgpt", src, str(tmp_path / "site")]) == 0
+
+
 def test_chatgpt_project_tag_reaches_the_index(tmp_path):
     data = _chatgpt_export()
     data[0]["__project_id"] = "g-p-XYZ"

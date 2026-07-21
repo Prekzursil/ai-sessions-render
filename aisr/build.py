@@ -104,9 +104,18 @@ def render_corpus(convs, out_dir, provider="claude", meta_of=None, load_errors=N
 
     write_index(out_dir, index, theme)
     write_json(os.path.join(out_dir, "_hidden-char-audit.json"), audit_rows)
+    # A conversation that parses cleanly but carries NO turns is a silent
+    # false-success: feeding a Codex-shaped export to the ChatGPT loader yields
+    # 1 conversation / 0 turns / 0 errors, so real content vanishes while the
+    # caller sees a clean load. Count turns so the caller can tell "rendered"
+    # from "rendered something". Measured: 1 conv, 0 turns, 0 errors pre-fix.
+    turns = sum(row[2] for row in index)
+    empty = [row[0] for row in index if row[2] == 0]
     report = {
         "conversations": n,
         "rendered": len(index),
+        "turns": turns,
+        "empty_conversations": len(empty),
         "fidelity_passed": len(index) - len(fidelity_fail),
         "failed": fidelity_fail,
         "errors": errors,
@@ -142,6 +151,12 @@ def write_index(out_dir, index, theme):
 
 def print_report(report):
     print("CONVERSATIONS_RENDERED", report["rendered"], "of", report["conversations"])
+    print("TURNS_RENDERED", report["turns"])
+    if report["empty_conversations"]:
+        # loud, because the usual cause is a wrong-provider or drifted export --
+        # a case that otherwise renders blank pages and reports success
+        print("EMPTY_CONVERSATIONS", report["empty_conversations"],
+              "(no turns parsed - wrong provider, or the export format changed)")
     print("FIDELITY_GATE_PASSED", report["fidelity_passed"], "of", report["rendered"])
     print("HIDDEN_CHAR_CONVERSATIONS", report["hidden_char_conversations"])
     print("ERRORS", len(report["errors"]))
